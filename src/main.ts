@@ -121,10 +121,13 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   const intro = gsap.timeline({ defaults: { ease: 'power4.out' } });
   intro
     .from('.hero-title .line > span', { yPercent: 110, duration: 1.1, stagger: 0.12 })
-    .from('.hero-product', { yPercent: 14, opacity: 0, duration: 1.2 }, 0.2)
+    .from('.hero-disc', { scale: 0, duration: 1.3, ease: 'expo.out' }, 0)
+    .from('.hero-product', { yPercent: 14, opacity: 0, duration: 1.2 }, 0.25)
+    .from('.hero-dots i', { scale: 0, stagger: 0.06, duration: 0.5, ease: 'back.out(2)' }, 1)
     .from('.hero-bottom', { yPercent: 60, autoAlpha: 0, duration: 0.8 }, 0.8);
   gsap.timeline({ scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 } })
     .to('.hero-product', { y: desktop ? 140 : 60, rotation: 5, scale: 1.04, ease: 'none' }, 0)
+    .to('.hero-disc', { scale: 1.35, y: desktop ? 60 : 30, ease: 'none' }, 0)
     .to('.hero-title', { y: desktop ? -90 : -30, ease: 'none' }, 0)
     .to('.hero-bottom', { opacity: 0, y: -30, ease: 'none', immediateRender: false }, 0);
 
@@ -173,6 +176,9 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
     gsap.to(img, { yPercent: i % 2 ? -7 : 5, ease: 'none', scrollTrigger: { trigger: '.lineup', start: 'top bottom', end: 'bottom top', scrub: true } });
   });
   gsap.from('.footer-signature', { y: 50, opacity: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: '.site-footer', start: 'top 85%' } });
+
+  // The can idles with a slow float so the hero is never frozen.
+  gsap.to('.hero-product img', { yPercent: -2.5, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 });
 
   const pointerEvents = new AbortController();
   if (desktop) {
