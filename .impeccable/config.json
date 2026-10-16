@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-10-16T21:05:04.033Z",
         "reason": "Claude: false positive. Type sizes live in src/style.css, not index.html; hero h1 is clamp(84px..236px), h2s 58-172px, body 15-28px, labels 12px, all far above 1.25x steps."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-16T21:36:19.699Z",
+        "reason": "Claude: false positive. The two manifesto cans use data-src lazy loading; main.ts assetsObserver sets src when .manifesto nears the viewport, and CSS hides img[data-src]:not([src]) until then."
       }
     ]
   }
