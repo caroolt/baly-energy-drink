@@ -15,59 +15,47 @@
           <a class="brand" href="#inicio" aria-label="BALY, voltar ao início">
             <img src="/assets/brand/logo.png" width="500" height="500" alt="BALY Energy Drink" data-brand />
           </a>
-          <span class="header-note">ENERGIA BRASILEIRA.<br />ESPÍRITO SEM LIMITES.</span>
-          <a class="header-link" href="#sabores">ESCOLHA SEU SABOR <span aria-hidden="true">↗</span></a>
+          <a class="pill-link" href="#sabores">ESCOLHA SEU SABOR <span aria-hidden="true">↘</span></a>
         </header>
         <main>
           <section class="hero" id="inicio" aria-labelledby="hero-title">
-            <div class="hero-topline"><span>SETE SABORES. SETE REALIDADES.</span><span>EXPERIÊNCIA CONCEITUAL / 01</span></div>
-            <h1 id="hero-title" class="hero-title"><span>UNLEASH</span><span class="hero-title-bottom"><i>THE</i> FLAVOR<span class="title-dot">.</span></span></h1>
-            <div class="hero-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+            <h1 id="hero-title" class="hero-title"><span class="line"><span>UNLEASH</span></span><span class="line"><span><i>THE</i> FLAVOR<span class="title-dot">.</span></span></span></h1>
             <div class="hero-product product-slot" data-product="tradicional">
               <img src="/assets/products/tradicional.png" alt="Lata BALY Tradicional" width="1080" height="1446" fetchpriority="high" />
             </div>
-            <span class="hero-stamp" aria-hidden="true">100%<br /><small>ATITUDE</small></span>
             <div class="hero-bottom">
-              <p>O próximo sabor<br /><strong>muda tudo.</strong></p>
-              <span class="hero-side-note">ABRA ESPAÇO<br />PARA O INESPERADO.</span>
-              <a class="round-link" href="#sabores"><span>EXPLORAR<br />SABORES</span><span aria-hidden="true">↘</span></a>
+              <p>O próximo sabor <strong>muda tudo.</strong></p>
+              <span class="scroll-cue" aria-hidden="true"><span>ROLE</span><i></i></span>
             </div>
-            <div class="hero-baseline"><span>ROLE PARA DESCOBRIR <span aria-hidden="true">↓</span></span><span>BALY ENERGY DRINK</span></div>
           </section>
 
           <section class="manifesto" aria-labelledby="manifesto-title">
-            <div class="section-kicker"><span>01 / NÃO FIQUE NO MESMO SABOR</span><span class="small-star" aria-hidden="true">✳</span></div>
-            <h2 id="manifesto-title">A VIDA É MUITO<br />GRANDE PRA<br /><span>UM SABOR SÓ.</span></h2>
-            <div class="manifesto-bottom"><span class="manifesto-arrow" aria-hidden="true">↘</span><p>Uma lata. Um novo universo.<br />Escolha um sabor e deixe a cor tomar conta.</p></div>
+            <h2 id="manifesto-title">A VIDA É MUITO GRANDE PRA <span>UM SABOR SÓ.</span></h2>
           </section>
 
           <section id="sabores" class="flavors" aria-label="Explore os sete sabores BALY" aria-roledescription="carrossel" style="--scene-bg: #191919; --scene-ink: #fbbe00; --scene-accent: #ffdd69">
-            <div class="flavor-background" aria-hidden="true"></div>
             <div class="splash-layer" aria-hidden="true"></div>
-            <div class="flavor-topline"><span>ESCOLHA. EXPLORE. REPITA.</span><span><b class="current-number">01</b> / 07</span></div>
             <div class="flavor-scenes" id="flavor-scenes"></div>
-            <div class="flavor-controls">
-              <button class="arrow-button previous" type="button" aria-label="Sabor anterior"><span aria-hidden="true">←</span></button>
-              <div class="flavor-control-label"><span class="control-caption">QUAL É O SEU PRÓXIMO?</span><span class="current-flavor">Tradicional</span></div>
-              <button class="arrow-button next" type="button" aria-label="Próximo sabor"><span aria-hidden="true">→</span></button>
+            <div class="flavor-ui">
+              <div class="flavor-count"><b class="current-number">01</b><span class="count-total">/ 07</span><span class="current-flavor">Tradicional</span></div>
+              <nav class="flavor-index" aria-label="Selecionar sabor" id="flavor-index"></nav>
+              <div class="flavor-arrows">
+                <button class="arrow-button previous" type="button" aria-label="Sabor anterior"><span aria-hidden="true">←</span></button>
+                <button class="arrow-button next" type="button" aria-label="Próximo sabor"><span aria-hidden="true">→</span></button>
+              </div>
             </div>
-            <nav class="flavor-index" aria-label="Selecionar sabor" id="flavor-index"></nav>
             <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" id="flavor-status">Sabor 1 de 7: Tradicional.</div>
           </section>
 
-          <div class="ticker" aria-hidden="true"><div><span>ESCOLHA O SEU</span><b>✳</b><span>MUDE O CLIMA</span><b>✳</b><span>UNLEASH THE FLAVOR</span><b>✳</b><span>ESCOLHA O SEU</span><b>✳</b></div></div>
-
           <section class="finale" id="todos" aria-labelledby="finale-title">
-            <div class="section-kicker"><span>07 SABORES / INFINITAS POSSIBILIDADES</span><span>CONTINUE CURIOSO.</span></div>
-            <h2 id="finale-title">QUAL É<br /><span>A SUA?</span></h2>
-            <p class="finale-copy">Você não precisa escolher um só.</p>
+            <h2 id="finale-title"><span class="line"><span>QUAL É</span></span><span class="line"><span>A SUA?</span></span></h2>
             <div class="lineup" id="lineup" aria-label="Revisitar os sabores"></div>
-            <div class="finale-bottom"><span>TOQUE EM UMA LATA.<br />DESCUBRA OUTRA REALIDADE.</span><a href="#sabores" class="text-link">EXPLORAR OUTRA VEZ <span aria-hidden="true">↗</span></a></div>
+            <a href="#sabores" class="text-link">EXPLORAR OUTRA VEZ <span aria-hidden="true">↗</span></a>
           </section>
         </main>
         <footer class="site-footer">
           <div class="footer-top"><span class="footer-signature">UNLEASH<br />THE FLAVOR.</span><a href="#inicio" class="back-top">VOLTAR AO TOPO <span aria-hidden="true">↑</span></a></div>
-          <div class="footer-bottom"><p>Projeto conceitual independente para portfólio.<br />Sem vínculo oficial com a BALY. Marcas e embalagens pertencem aos seus titulares.</p><p>DIREÇÃO DE ARTE & CREATIVE DEVELOPMENT<br />HTML · CSS · TYPESCRIPT · GSAP</p></div>
+          <p class="footer-note">Projeto conceitual independente para portfólio, sem vínculo oficial com a BALY. Marcas e embalagens pertencem aos seus titulares.</p>
         </footer>
       </div>
     </div>

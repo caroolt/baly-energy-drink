@@ -15,9 +15,10 @@ test('all seven flavors, wrapping, and live announcements', async ({ page }) => 
     await expect.poll(() => page.locator('.flavor-scene:visible .scene-product img').evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBeTruthy();
     await expect(region.getByRole('button', { name: `Explorar ${names[index]}`, exact: true })).toHaveAttribute('aria-current', 'true');
   }
-  await page.getByRole('button', { name: 'Próximo sabor' }).click();
-  await expect(page.getByRole('status')).toHaveText('Sabor 1 de 7: Tradicional.');
-  await expect(region).toHaveAttribute('data-transitioning', 'false');
+  // Scroll drives the stage, so the ends are real ends: no wrapping back through six pinned screens.
+  await expect(page.getByRole('button', { name: 'Próximo sabor' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Sabor anterior' }).click();
+  await expect(page.getByRole('status')).toHaveText('Sabor 6 de 7: Coco e Açaí.');
   expect(errors).toEqual([]);
 });
 
@@ -41,14 +42,14 @@ for (const width of [320, 375, 768, 1440]) {
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
-    await page.getByRole('link', { name: 'EXPLORAR SABORES', exact: true }).click();
+    await page.getByRole('link', { name: 'ESCOLHA SEU SABOR', exact: true }).click();
     await expect(page.locator('#sabores button[aria-current="true"]')).toBeFocused();
     await page.getByRole('button', { name: 'Explorar Morango e Pêssego', exact: true }).click();
     await expect(page.getByRole('status')).toHaveText('Sabor 5 de 7: Morango e Pêssego.');
     await expect(page.locator('#sabores')).toHaveAttribute('data-transitioning', 'false');
     const overlap = await page.evaluate(() => {
       const copy = document.querySelector('.flavor-scene:not([hidden]) .scene-copy')!.getBoundingClientRect();
-      const controls = document.querySelector('.flavor-index')!.getBoundingClientRect();
+      const controls = document.querySelector('.flavor-ui')!.getBoundingClientRect();
       return copy.bottom > controls.top;
     });
     expect(overlap).toBeFalsy();
@@ -69,6 +70,23 @@ test('original assets and final lineup load without missing images', async ({ pa
   await expect.poll(() => page.locator('.lineup img').evaluateAll(images => images.filter(img => (img as HTMLImageElement).naturalWidth === 1086).length)).toBe(7);
   await expect(page.locator('.asset-missing')).toHaveCount(0);
   expect(imageErrors).toEqual([]);
+});
+
+test('scrolling the page changes the flavor on its own, with snapping and no horizontal input', async ({ page }) => {
+  await page.goto('/#sabores');
+  await expect(page.getByRole('status')).toHaveText('Sabor 1 de 7: Tradicional.');
+  const start = await page.evaluate(() => scrollY);
+  await page.mouse.move(700, 400);
+  for (let i = 0; i < 12; i++) { await page.mouse.wheel(0, 200); await page.waitForTimeout(120); }
+  await expect(page.getByRole('status')).not.toHaveText('Sabor 1 de 7: Tradicional.');
+  await expect(page.locator('#sabores')).toHaveAttribute('data-transitioning', 'false');
+  expect(await page.evaluate(() => scrollY)).toBeGreaterThan(start);
+  // The stage stays pinned while it changes.
+  const top = await page.locator('#sabores').evaluate(el => Math.round(el.getBoundingClientRect().top));
+  expect(top).toBe(0);
+  const before = Number(await page.locator('.current-number').textContent());
+  await page.getByRole('button', { name: 'Sabor anterior' }).click();
+  await expect(page.locator('.current-number')).toHaveText(String(before - 1).padStart(2, '0'));
 });
 
 test('reduced motion changes flavors without splash animation or scroll smoothing', async ({ page }) => {

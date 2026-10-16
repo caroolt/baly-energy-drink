@@ -3,13 +3,13 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { flavors, productPath } from './flavors';
-import { artMarkup, photoMarkup, spark } from './art';
+import { artMarkup } from './art';
 import { createFlavorSlider } from './slider';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
 // Inline icons avoid missing Unicode glyphs on minimal cloud/mobile font stacks.
-document.querySelectorAll<HTMLElement>('.header-link span, .round-link > span:last-child, .manifesto-arrow, .hero-baseline span span, .text-link span, .back-top span, .arrow-button span').forEach(icon => {
+document.querySelectorAll<HTMLElement>('.pill-link span, .text-link span, .back-top span, .arrow-button span').forEach(icon => {
   const direction = icon.textContent?.trim();
   const rotation = direction === '↗' ? -45 : direction === '↘' ? 45 : direction === '↓' ? 90 : direction === '↑' ? -90 : direction === '←' ? 180 : 0;
   icon.innerHTML = `<svg viewBox="0 0 32 32" width="1em" height="1em" fill="none" aria-hidden="true" style="transform:rotate(${rotation}deg)"><path d="M5 16H27M17 6L27 16L17 26" stroke="currentColor" stroke-width="1.6"/></svg>`;
@@ -19,17 +19,26 @@ const scenes = document.querySelector<HTMLElement>('#flavor-scenes')!;
 scenes.innerHTML = flavors.map((flavor, index) => `
   <article class="flavor-scene" data-scene="${flavor.id}" role="group" aria-roledescription="slide" aria-label="${index + 1} de 7: ${flavor.name}" ${index ? 'hidden inert' : ''} style="--ink:${flavor.ink};--accent:${flavor.accent};--tilt:${flavor.tilt}deg">
     <div class="flavor-word ${flavor.display.length > 10 ? 'long-word' : ''}" aria-hidden="true">${flavor.display}</div>
-    <div class="scene-art" aria-hidden="true">${artMarkup(flavor)}</div>
-    <div class="scene-copy"><span class="scene-mood">${flavor.mood}</span><h2>${flavor.headline}</h2><p>${flavor.copy}</p></div>
+    <div class="scene-art" aria-hidden="true">${artMarkup()}</div>
+    <div class="scene-copy"><h2>${flavor.headline}</h2><p>${flavor.copy}</p></div>
     <div class="scene-product product-slot" data-product="${flavor.id}"><img ${index ? 'data-src' : 'src'}="${productPath(flavor.id)}" alt="Lata BALY ${flavor.name}" width="1086" height="1448" loading="lazy" decoding="async" /></div>
-    <div class="scene-photos" aria-hidden="true">${photoMarkup(flavor)}</div>
-    <span class="scene-vertical" aria-hidden="true">BALY / ${flavor.name.toLocaleUpperCase('pt-BR')} / ENERGY DRINK</span>
   </article>
 `).join('');
 
-document.querySelectorAll('.small-star, .ticker b, .solar-star, .pressure-mark').forEach(icon => { icon.innerHTML = spark; });
+// Manifesto words are split so scroll can light them up one by one.
+const manifesto = document.querySelector<HTMLElement>('#manifesto-title')!;
+const wordMarkup = (text: string) => text.trim().split(/\s+/).map(word => `<span class="m-word">${word}</span>`).join(' ');
+manifesto.querySelectorAll<HTMLElement>('span').forEach(span => { span.innerHTML = wordMarkup(span.textContent!); });
+manifesto.childNodes.forEach(node => {
+  if (node.nodeType === Node.TEXT_NODE && node.textContent!.trim()) {
+    const holder = document.createElement('span');
+    holder.innerHTML = wordMarkup(node.textContent!) + ' ';
+    holder.style.color = 'inherit';
+    node.replaceWith(...holder.childNodes);
+  }
+});
 
-document.querySelector('#flavor-index')!.innerHTML = flavors.map((flavor, index) => `<button type="button" data-flavor="${flavor.id}" aria-label="Explorar ${flavor.name}" aria-current="${index === 0}"><span>${String(index + 1).padStart(2, '0')}</span>${flavor.name}</button>`).join('');
+document.querySelector('#flavor-index')!.innerHTML = flavors.map((flavor, index) => `<button type="button" data-flavor="${flavor.id}" aria-label="Explorar ${flavor.name}" aria-current="${index === 0}"></button>`).join('');
 
 const rotations = [-15, -10, -5, 0, 5, 10, 15];
 const offsets = [22, 5, -10, -22, -10, 5, 22];
@@ -58,23 +67,27 @@ const assetsObserver = new IntersectionObserver(entries => {
   });
 }, { rootMargin: '200px' });
 assetsObserver.observe(document.querySelector('.lineup')!);
-// The photographic sheet is only requested as the flavor explorer approaches.
-assetsObserver.observe(document.querySelector('.flavor-scene')!);
 
 const slider = createFlavorSlider(document.querySelector('#sabores')!);
 const media = gsap.matchMedia();
 let smoother: ScrollSmoother | undefined;
+let pin: ScrollTrigger | undefined;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const stepCount = flavors.length - 1;
+
+const scrollToPosition = (top: number) => {
+  if (smoother) smoother.scrollTo(top, !reduced.matches);
+  else window.scrollTo({ top, behavior: reduced.matches ? 'instant' : 'smooth' });
+};
+const flavorPosition = (index: number) => pin ? pin.start + (pin.end - pin.start) * (index / stepCount) : 0;
 
 function navigateTo(id: string, focus = false) {
   const target = document.getElementById(id);
   if (!target) return;
-  if (smoother) smoother.scrollTo(target, !reduced.matches, 'top top');
+  if (id === 'sabores' && pin) scrollToPosition(flavorPosition(0));
+  else if (smoother) smoother.scrollTo(target, !reduced.matches, 'top top');
   else target.scrollIntoView({ behavior: reduced.matches ? 'instant' : 'smooth', block: 'start' });
-  if (focus) {
-    const focusTarget = target.querySelector<HTMLButtonElement>('button[aria-current="true"]');
-    focusTarget?.focus({ preventScroll: true });
-  }
+  if (focus) target.querySelector<HTMLButtonElement>('button[aria-current="true"]')?.focus({ preventScroll: true });
 }
 
 const events = new AbortController();
@@ -89,9 +102,10 @@ document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach(link => {
 });
 document.querySelectorAll<HTMLButtonElement>('[data-revisit]').forEach(button => {
   button.addEventListener('click', () => {
-    void slider.select(Number(button.dataset.revisit));
     history.pushState(null, '', '#sabores');
-    navigateTo('sabores', true);
+    slider.request(Number(button.dataset.revisit));
+    if (!pin) navigateTo('sabores', true);
+    else button.blur();
   }, { signal: events.signal });
 });
 window.addEventListener('popstate', () => navigateTo(location.hash.slice(1) || 'inicio'), { signal: events.signal });
@@ -103,47 +117,85 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
     smoother = ScrollSmoother.create({ wrapper: '#smooth-wrapper', content: '#smooth-content', smooth: 0.85, effects: false, smoothTouch: 0, normalizeScroll: false });
   }
 
-  gsap.from('.hero-title > span', { yPercent: 30, opacity: 0, stagger: 0.1, duration: 0.85, ease: 'power3.out' });
-  gsap.from('.hero-product', { y: 65, rotation: -6, opacity: 0, duration: 1.1, ease: 'power3.out', delay: 0.1 });
-  gsap.to('.hero-product', { y: desktop ? 130 : 50, rotation: desktop ? 4 : -4, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.5 } });
-  gsap.to('.hero-title', { y: desktop ? -80 : -25, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-  gsap.from('.manifesto h2', { y: 45, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: '.manifesto', start: 'top 90%', end: 'center 65%', scrub: true } });
-  gsap.to('.ticker > div', { xPercent: -20, ease: 'none', scrollTrigger: { trigger: '.ticker', start: 'top bottom', end: 'bottom top', scrub: 0.4 } });
-  gsap.from('.lineup-item', { y: 90, opacity: 0, stagger: 0.055, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: '.lineup', start: 'top 85%', toggleActions: 'play none none none' } });
+  // 1. Hero: masked title lines, the can drops in, then everything drifts apart on scroll.
+  const intro = gsap.timeline({ defaults: { ease: 'power4.out' } });
+  intro
+    .from('.hero-title .line > span', { yPercent: 110, duration: 1.1, stagger: 0.12 })
+    .from('.hero-product', { yPercent: 14, opacity: 0, duration: 1.2 }, 0.2)
+    .from('.hero-bottom', { yPercent: 60, autoAlpha: 0, duration: 0.8 }, 0.8);
+  gsap.timeline({ scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 } })
+    .to('.hero-product', { y: desktop ? 140 : 60, rotation: 5, scale: 1.04, ease: 'none' }, 0)
+    .to('.hero-title', { y: desktop ? -90 : -30, ease: 'none' }, 0)
+    .to('.hero-bottom', { opacity: 0, y: -30, ease: 'none', immediateRender: false }, 0);
+
+  // 2. Manifesto: pinned, words light up in order.
+  gsap.timeline({ scrollTrigger: { trigger: '.manifesto', start: 'top top', end: () => `+=${innerHeight * 1.1}`, pin: true, scrub: 0.5 } })
+    .fromTo('.m-word', { opacity: 0.14 }, { opacity: 1, stagger: 0.25, ease: 'none', duration: 1 });
+
+  // 3. Flavor stage: pinned, scroll position chooses the flavor and snaps between them.
+  const stage = document.querySelector<HTMLElement>('#sabores')!;
+  let shown = 0;
+  let jumping: number | null = null;
+  let jumpTimer: ReturnType<typeof setTimeout> | undefined;
+  const endJump = () => { jumping = null; clearTimeout(jumpTimer); };
+  pin = ScrollTrigger.create({
+    trigger: stage,
+    start: 'top top',
+    end: () => `+=${innerHeight * stepCount * 0.75}`,
+    pin: true,
+    anticipatePin: 1,
+    invalidateOnRefresh: true,
+    snap: { snapTo: 1 / stepCount, duration: { min: 0.2, max: 0.55 }, delay: 0.12, ease: 'power2.inOut' },
+    onUpdate: self => {
+      const index = Math.round(self.progress * stepCount);
+      if (jumping !== null) { if (Math.abs(self.progress * stepCount - jumping) < 0.08) endJump(); return; }
+      if (index === shown) return;
+      shown = index;
+      void slider.select(index);
+    },
+  });
+  // Buttons, keys and swipes scroll to the flavor; the stage follows. Direct jumps skip the flavors in between.
+  slider.setDriver(index => {
+    shown = index;
+    jumping = index;
+    clearTimeout(jumpTimer);
+    jumpTimer = setTimeout(endJump, 1800);
+    void slider.select(index);
+    scrollToPosition(flavorPosition(index));
+  });
+  window.addEventListener('wheel', endJump, { passive: true, signal: events.signal });
+  window.addEventListener('touchstart', endJump, { passive: true, signal: events.signal });
+
+  // 4. Finale: title lines and cans rise in, then cans drift at different speeds.
+  gsap.from('.finale h2 .line > span', { yPercent: 110, duration: 1, stagger: 0.1, ease: 'power4.out', scrollTrigger: { trigger: '.finale', start: 'top 60%' } });
+  gsap.from('.lineup-item', { y: 160, rotation: (i: number) => (i % 2 ? 14 : -14), opacity: 0, duration: 1, stagger: 0.07, ease: 'power3.out', scrollTrigger: { trigger: '.lineup', start: 'top 85%' } });
+  gsap.utils.toArray<HTMLElement>('.lineup-item img').forEach((img, i) => {
+    gsap.to(img, { yPercent: i % 2 ? -7 : 5, ease: 'none', scrollTrigger: { trigger: '.lineup', start: 'top bottom', end: 'bottom top', scrub: true } });
+  });
+  gsap.from('.footer-signature', { y: 50, opacity: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: '.site-footer', start: 'top 85%' } });
 
   const pointerEvents = new AbortController();
   if (desktop) {
     const hero = document.querySelector<HTMLElement>('.hero')!;
     const image = hero.querySelector<HTMLImageElement>('.hero-product img')!;
-    const x = gsap.quickTo(image, 'x', { duration: 0.65, ease: 'power3.out' });
-    const y = gsap.quickTo(image, 'y', { duration: 0.65, ease: 'power3.out' });
+    const x = gsap.quickTo(image, 'x', { duration: 0.7, ease: 'power3.out' });
+    const y = gsap.quickTo(image, 'y', { duration: 0.7, ease: 'power3.out' });
     hero.addEventListener('pointermove', event => {
       const bounds = hero.getBoundingClientRect();
-      x((event.clientX / bounds.width - 0.5) * 22);
-      y(((event.clientY - bounds.top) / bounds.height - 0.5) * 16);
+      x((event.clientX / bounds.width - 0.5) * 26);
+      y(((event.clientY - bounds.top) / bounds.height - 0.5) * 18);
     }, { signal: pointerEvents.signal });
     hero.addEventListener('pointerleave', () => { x(0); y(0); }, { signal: pointerEvents.signal });
-
-    const stage = document.querySelector<HTMLElement>('#sabores')!;
-    stage.addEventListener('pointermove', event => {
-      if (stage.dataset.transitioning === 'true') return;
-      const bounds = stage.getBoundingClientRect();
-      const dx = (event.clientX - bounds.left) / bounds.width - 0.5;
-      const dy = (event.clientY - bounds.top) / bounds.height - 0.5;
-      const active = stage.querySelector('.flavor-scene:not([hidden])')!;
-      gsap.to(active.querySelector('.scene-product img'), { x: dx * 12, y: dy * 8, rotationY: dx * 5, rotationX: -dy * 4, transformPerspective: 900, duration: 0.65, overwrite: 'auto', ease: 'power2.out' });
-      gsap.to(active.querySelector('.scene-photos'), { x: -dx * 23, y: -dy * 14, duration: 0.75, overwrite: 'auto', ease: 'power2.out' });
-    }, { signal: pointerEvents.signal });
-    stage.addEventListener('pointerleave', () => {
-      gsap.to(stage.querySelectorAll('.scene-product img, .scene-photos'), { x: 0, y: 0, rotationY: 0, rotationX: 0, duration: 0.6, overwrite: 'auto' });
-    }, { signal: pointerEvents.signal });
   }
 
   return () => {
     pointerEvents.abort();
+    endJump();
+    slider.setDriver(null);
+    pin = undefined;
     smoother?.kill();
     smoother = undefined;
-    gsap.set('.hero-product img, .scene-product img, .scene-photos', { clearProps: 'transform' });
+    gsap.set('.hero-product img', { clearProps: 'transform' });
   };
 });
 

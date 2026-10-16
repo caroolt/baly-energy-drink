@@ -5,19 +5,17 @@ Vite, TypeScript, HTML, CSS, GSAP 3.15, ScrollTrigger e ScrollSmoother. Sem WebG
 
 ## Estado atual
 
-A base funcional contém hero tipográfico, manifesto, slider de sete sabores com splash vetorial animado,
-seleção direta, setas, gesto horizontal, teclado e composição final navegável.
-O slider não avança automaticamente e não captura a rolagem vertical.
+Direção: **uma lata, uma cor por vez.** Hero com título em máscara e uma lata, manifesto fixado cujas palavras
+acendem com o scroll, palco de sete sabores fixado em que a rolagem da página troca o sabor sozinha (com snap
+e splash de cor), conjunto final e rodapé enxuto. Setas, teclado, marcadores e gesto horizontal rolam até o sabor
+escolhido, então o scroll e os controles ficam sempre sincronizados.
 ScrollSmoother funciona somente em desktop com ponteiro preciso; mobile usa rolagem nativa.
-A preferência de movimento reduzido desliga animações de entrada, parallax, splash e suavização.
+Com movimento reduzido não há pin, animação ou suavização: o palco vira um slider comum com setas.
 
 O logo e os sete PNGs originais de `baly.zip` estão integrados, preservados byte a byte.
-Frutas, folhas e um splash âmbar complementam as composições, usando uma folha fotográfica gerada
-para este projeto. O SVG animado expande a cor do próximo sabor até cobrir o cenário.
-Os produtos e a folha fotográfica são carregados conforme a exploração; somente logo e Tradicional
-são solicitados na abertura.
+Somente logo e Tradicional são solicitados na abertura; os demais produtos carregam sob demanda.
 
-Validação: build TypeScript/Vite, nove testes de navegador, oito assets originais verificados e
+Validação: build TypeScript/Vite, dez testes de navegador, oito assets originais verificados e
 inspeção de composições desktop/mobile. Veja [docs/validation.md](docs/validation.md) para evidências e limites.
 
 ## Executar

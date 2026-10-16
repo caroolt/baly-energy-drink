@@ -40,3 +40,15 @@ Tadaly: azul elétrico e dourado / estrelas e faixas, sem alegações de ingredi
 
 Os testes agora incluem o carregamento dos produtos originais e das sete latas no encerramento.
 O relatório detalhado está em `docs/validation.md`. Prêmios e avaliação externa não são alegados.
+
+
+## Revisão: menos ruído, scroll conduz (atual)
+
+Removidos: anéis, selo, órbitas, estrelas, fotos de frutas, texto vertical, ticker, kickers e microtextos de 8–9 px.
+Cada cena tem agora: palavra fantasma, um disco de cor, título + uma linha, lata. Texto mínimo: 12 px.
+
+1. Hero: linhas do título sobem por máscara, lata entra; no scroll a lata desce/gira e o título sobe.
+2. Manifesto: fixado por ~1,1 tela; palavras acendem em sequência (scrub).
+3. Sabores: fixado por 0,75 tela por sabor; o índice vem do progresso do scroll, com snap. Cliques, setas e teclado
+   rolam até a posição do sabor (saltos diretos pulam os intermediários). Nas pontas, a seta desabilita.
+4. Final: título em máscara, latas sobem com rotação alternada e depois derivam em velocidades distintas.

@@ -23,6 +23,8 @@ export function createFlavorSlider(root: HTMLElement) {
   let alive = true;
   let timeline: gsap.core.Timeline | null = null;
   let touch: { x: number; y: number; id: number } | null = null;
+  // When set, user input asks the driver (page scroll) to move; scroll then calls select().
+  let driver: ((index: number) => void) | null = null;
 
   function updateInterface(index: number) {
     const flavor = flavors[index];
@@ -32,6 +34,8 @@ export function createFlavorSlider(root: HTMLElement) {
     root.querySelector('.current-number')!.textContent = String(index + 1).padStart(2, '0');
     root.querySelector('.current-flavor')!.textContent = flavor.name;
     choices.forEach((button, i) => button.setAttribute('aria-current', String(i === index)));
+    previous.disabled = !!driver && index === 0;
+    next.disabled = !!driver && index === flavors.length - 1;
     status.textContent = `Sabor ${index + 1} de ${flavors.length}: ${flavor.name}.`;
   }
 
@@ -41,7 +45,7 @@ export function createFlavorSlider(root: HTMLElement) {
       scene.hidden = i !== index;
       scene.inert = i !== index;
       gsap.set(scene, { clearProps: 'opacity,visibility' });
-      gsap.set(scene.querySelectorAll('.scene-product, .scene-copy, .flavor-word, .scene-art, .scene-photos'), { clearProps: 'opacity,visibility,transform' });
+      gsap.set(scene.querySelectorAll('.scene-product, .scene-copy, .flavor-word, .scene-art'), { clearProps: 'opacity,visibility,transform' });
     });
     root.style.setProperty('--scene-bg', flavor.color);
     gsap.set(splash, { scale: 0 });
@@ -93,12 +97,11 @@ export function createFlavorSlider(root: HTMLElement) {
     const copy = incoming.querySelector('.scene-copy')!;
     const word = incoming.querySelector('.flavor-word')!;
     const art = incoming.querySelector('.scene-art')!;
-    const photos = incoming.querySelector('.scene-photos')!;
     incoming.hidden = false;
     incoming.inert = false;
     outgoing.inert = true;
     gsap.set(incoming, { autoAlpha: 1 });
-    gsap.set([product, copy, word, art, photos], { opacity: 0 });
+    gsap.set([product, copy, word, art], { opacity: 0 });
     gsap.set(splash, { fill: flavor.color, scale: 0.035, rotation: -18 });
     gsap.set(splashBody, { scale: 1, transformOrigin: '50% 50%' });
     gsap.set(splashDrops, { scale: 0.7, opacity: 1, transformOrigin: '50% 50%' });
@@ -108,27 +111,31 @@ export function createFlavorSlider(root: HTMLElement) {
     timeline = gsap.timeline({ onComplete: () => settle(index) });
     timeline
       .to(outgoing.querySelector('.scene-product'), { x: -55, y: 20, scale: 0.9, opacity: 0, duration: 0.3, ease: 'power2.in' }, 0)
-      .to(outgoing.querySelectorAll('.scene-copy, .flavor-word, .scene-art, .scene-photos'), { opacity: 0, duration: 0.2 }, 0.02)
+      .to(outgoing.querySelectorAll('.scene-copy, .flavor-word, .scene-art'), { opacity: 0, duration: 0.2 }, 0.02)
       .to(splash, { scale: cover, rotation: 10, duration: 0.82, ease: 'power2.inOut' }, 0.04)
       .to(splashDrops, { scale: 1.35, duration: 0.55, ease: 'power2.out' }, 0.09)
       .call(() => updateInterface(index), [], 0.35)
       .fromTo(art, { scale: 1.15, rotation: -4, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.65, ease: 'power2.out' }, 0.38)
       .fromTo(word, { y: 55, opacity: 0 }, { y: 0, opacity: innerWidth <= 700 ? 0.2 : 0.15, duration: 0.6, ease: 'power3.out' }, 0.42)
       .fromTo(product, { x: 85, y: 35, rotation: flavor.tilt + 12, scale: 0.9, opacity: 0 }, { x: 0, y: 0, rotation: flavor.tilt, scale: 1, opacity: 1, duration: 0.76, ease: 'power3.out' }, 0.32)
-      .fromTo(photos, { y: 65, rotation: -7, scale: 0.9, opacity: 0 }, { y: 0, rotation: 0, scale: 1, opacity: 1, duration: 0.78, ease: 'power3.out' }, 0.42)
       .fromTo(copy, { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out' }, 0.58);
   }
 
-  const move = (step: number) => { void select((queued ?? destination) + step); };
+  // User intent: hand off to the scroll driver when present, otherwise transition directly.
+  const request = (target: number) => {
+    if (!driver) { void select(target); return; }
+    driver(Math.min(Math.max(target, 0), flavors.length - 1));
+  };
+  const move = (step: number) => request((queued ?? destination) + step);
   previous.addEventListener('click', () => move(-1), { signal });
   next.addEventListener('click', () => move(1), { signal });
-  choices.forEach((choice, index) => choice.addEventListener('click', () => { void select(index); }, { signal }));
+  choices.forEach((choice, index) => choice.addEventListener('click', () => request(index), { signal }));
   root.addEventListener('keydown', event => {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'ArrowRight') { event.preventDefault(); move(1); }
     if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
-    if (event.key === 'Home') { event.preventDefault(); void select(0); }
-    if (event.key === 'End') { event.preventDefault(); void select(flavors.length - 1); }
+    if (event.key === 'Home') { event.preventDefault(); request(0); }
+    if (event.key === 'End') { event.preventDefault(); request(flavors.length - 1); }
   }, { signal });
 
   root.addEventListener('pointerdown', event => {
@@ -151,6 +158,8 @@ export function createFlavorSlider(root: HTMLElement) {
 
   return {
     select,
+    request,
+    setDriver(next: ((index: number) => void) | null) { driver = next; updateInterface(destination); },
     destroy() { alive = false; controller.abort(); timeline?.kill(); },
   };
 }
