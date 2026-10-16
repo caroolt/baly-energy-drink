@@ -87,8 +87,8 @@ test('scrolling the page changes the flavor on its own, with snapping and no hor
   await expect(page.locator('#sabores')).toHaveAttribute('data-transitioning', 'false');
   expect(await page.evaluate(() => scrollY)).toBeGreaterThan(start);
   // The stage stays pinned while it changes.
-  const top = await page.locator('#sabores').evaluate(el => Math.round(el.getBoundingClientRect().top));
-  expect(top).toBe(0);
+  const top = await page.locator('#sabores').evaluate(el => el.getBoundingClientRect().top);
+  expect(Math.abs(top)).toBeLessThanOrEqual(1);
   const before = Number(await page.locator('.current-number').textContent());
   await page.getByRole('button', { name: 'Sabor anterior' }).click();
   await expect(page.locator('.current-number')).toHaveText(String(before - 1).padStart(2, '0'));

@@ -2,6 +2,8 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <!-- Paints the loader cover on the very first frame, before the stylesheet arrives (Vite dev injects CSS via JS). -->
+    <style>html{background:#fbbe00}#preloader{position:fixed;inset:0;z-index:200;background:#fbbe00}#preloader>*{visibility:hidden}</style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fbbe00" />
     <meta name="description" content="Sete sabores, sete realidades. Uma experiência conceitual independente inspirada na BALY Energy Drink. Explore UNLEASH THE FLAVOR." />
@@ -43,8 +45,7 @@
           </section>
 
           <section class="manifesto" aria-labelledby="manifesto-title">
-            <div class="m-can m-can-a product-slot" aria-hidden="true"><img data-src="/assets/products/tropical.png" alt="" width="1086" height="1448" loading="lazy" decoding="async" /></div>
-            <div class="m-can m-can-b product-slot" aria-hidden="true"><img data-src="/assets/products/melancia.png" alt="" width="1086" height="1448" loading="lazy" decoding="async" /></div>
+            <div class="m-cans" aria-hidden="true"></div>
             <div class="m-inner">
               <h2 id="manifesto-title">A VIDA É MUITO GRANDE PRA <span class="m-strike">UM SABOR SÓ.<svg class="m-line" viewBox="0 0 600 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M4 26C120 12 230 30 340 18S520 8 596 20"/></svg></span></h2>
               <p class="m-answer">Por isso são sete. <span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></p>

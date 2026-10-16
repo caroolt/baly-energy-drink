@@ -9,6 +9,12 @@ import { runPreloader } from './preloader';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
+// A reload must start from the top: restoring a scroll position inside pinned scenes before
+// ScrollTrigger builds its spacers leaves the layout scrambled until everything refreshes.
+// ScrollTrigger keeps its own scroll memory, so it has to be told (plain history.scrollRestoration is reset).
+ScrollTrigger.clearScrollMemory('manual');
+if (!location.hash) window.scrollTo(0, 0);
+
 // Inline icons avoid missing Unicode glyphs on minimal cloud/mobile font stacks.
 document.querySelectorAll<HTMLElement>('.pill-link span, .text-link span, .back-top span, .arrow-button span').forEach(icon => {
   const direction = icon.textContent?.trim();
@@ -40,6 +46,10 @@ const splitWords = (element: Element) => {
   });
 };
 splitWords(manifesto);
+
+// All seven cans fly through the pinned manifesto, alternating sides.
+const canLanes = ['72%', '4%', '84%', '16%', '64%', '0%', '78%'];
+document.querySelector('.m-cans')!.innerHTML = flavors.map((flavor, index) => `<div class="m-can product-slot" style="left:${canLanes[index]}"><img data-src="${productPath(flavor.id)}" alt="" width="1086" height="1448" loading="lazy" decoding="async" /></div>`).join('');
 
 document.querySelector('#flavor-index')!.innerHTML = flavors.map((flavor, index) => `<button type="button" data-flavor="${flavor.id}" aria-label="Explorar ${flavor.name}" aria-current="${index === 0}"></button>`).join('');
 
@@ -147,12 +157,19 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   //    while two cans drift through the frame.
   gsap.timeline({ scrollTrigger: { trigger: '.manifesto', start: 'top top', end: () => `+=${innerHeight * 1.8}`, pin: true, scrub: 0.6 } })
     .fromTo('.m-word', { opacity: 0.12 }, { opacity: 1, stagger: 0.12, ease: 'none', duration: 0.4 }, 0)
-    .fromTo('.m-line path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, ease: 'power1.inOut', duration: 0.7 }, '>')
+    .fromTo('.m-line path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, ease: 'power2.inOut', duration: 0.6, immediateRender: true }, '>')
     .to('.m-strike .m-word', { opacity: 0.35, duration: 0.3 }, '<0.4')
     .from('.m-answer', { yPercent: 60, opacity: 0, duration: 0.5, ease: 'power2.out' }, '>-0.1')
     .from('.m-answer .dots i', { scale: 0, stagger: 0.07, duration: 0.3, ease: 'back.out(2)' }, '<0.2')
-    .fromTo('.m-can-a', { yPercent: -40, rotation: -10 }, { yPercent: 35, rotation: 12, ease: 'none', duration: 3.2 }, 0)
-    .fromTo('.m-can-b', { yPercent: 45, rotation: 8 }, { yPercent: -30, rotation: -10, ease: 'none', duration: 3.2 }, 0);
+    // Each can crosses the full screen in a short slice of the scroll, so they rush past faster than the page moves.
+    .fromTo('.m-can', {
+      y: () => innerHeight * 1.05,
+      rotation: (i: number) => (i % 2 ? -28 : 28),
+    }, {
+      y: () => -innerHeight * 0.45,
+      rotation: (i: number) => (i % 2 ? 14 : -14),
+      ease: 'none', duration: 0.8, stagger: 0.38,
+    }, 0);
 
   // 3. Flavor stage: pinned, scroll position chooses the flavor and snaps between them.
   const stage = document.querySelector<HTMLElement>('#sabores')!;
