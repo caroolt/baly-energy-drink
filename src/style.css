@@ -129,19 +129,21 @@ html.is-loading{overflow:hidden}
 .arrow-button:hover:not(:disabled){background:color-mix(in srgb,currentColor 14%,transparent);transform:scale(1.07)}
 .arrow-button:disabled{opacity:.3;cursor:default}
 
-/* Numbers: one figure per panel, each in a flavor's colour world with its can. When pinned, vertical
-   scroll slides the panels sideways so the colours hand over edge to edge. Without motion they stack. */
-.numbers{position:relative;background:var(--black)}
+/* Numbers: one calm brand surface (black, yellow figures). Figures roll like a counter, one replacing
+   the next in place; only the can beside them changes flavor. Without motion the steps stack. */
+.numbers{position:relative;background:var(--black);color:var(--cream)}
 .num-stage{position:relative}
-.num-step{position:relative;min-height:100svh;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.6fr);grid-template-rows:1fr auto 1fr;align-items:end;padding:0 var(--gutter);background:var(--bg);color:var(--ink);overflow:hidden}
-.num-figure{grid-column:1;grid-row:2;position:relative;z-index:2;font:900 clamp(110px,17vw,330px)/.78 var(--display);letter-spacing:-.025em;white-space:nowrap;font-variant-numeric:tabular-nums}
-.num-figure b{display:block;font-weight:inherit}
+.num-step{position:relative;min-height:100svh;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.6fr);grid-template-rows:1fr auto 1fr;align-items:end;padding:0 var(--gutter);overflow:hidden}
+.num-figure{grid-column:1;grid-row:2;position:relative;z-index:2;font:900 clamp(110px,17vw,330px)/.78 var(--display);letter-spacing:-.025em;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--yellow)}
+.num-roll{display:block;overflow:hidden;padding:.08em 0 .1em;margin:-.08em 0 -.1em}
+.num-roll>*{display:block}
+.num-figure b{font-weight:inherit}
 .num-line{grid-column:1;grid-row:3;align-self:start;position:relative;z-index:2;margin-top:clamp(30px,5.5vh,64px);font:800 clamp(26px,2.9vw,52px)/1 var(--display);text-transform:uppercase;letter-spacing:.005em}
+.num-line .num-roll{display:block}
 .num-can{grid-column:2;grid-row:1/4;align-self:center;justify-self:center;position:relative;z-index:1;height:min(78svh,820px);aspect-ratio:1086/1448}
-.num-can img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(26px 30px 22px #0004)}
+.num-can img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(26px 30px 22px #0006)}
 .numbers.is-pinned .num-stage{height:100svh;overflow:hidden}
-.numbers.is-pinned .num-track{display:flex;width:max-content;height:100%;will-change:transform}
-.numbers.is-pinned .num-step{flex:0 0 100vw;height:100%;min-height:0}
+.numbers.is-pinned .num-step{position:absolute;inset:0;min-height:0}
 
 /* Finale. */
 .finale{padding:15vh var(--gutter) 70px;background:var(--yellow);position:relative;overflow:hidden;min-height:100svh;display:flex;flex-direction:column;align-items:flex-start}

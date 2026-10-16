@@ -101,15 +101,14 @@ test('preloader counts up, then lifts and unlocks scrolling', async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.classList.contains('is-loading'))).toBeFalsy();
 });
 
-test('numbers panels slide sideways and count each figure up', async ({ page }) => {
+test('numbers roll in place like a counter and count each figure up', async ({ page }) => {
   await page.goto('/');
   await ready(page);
   const top = await page.locator('#numeros').evaluate(el => el.getBoundingClientRect().top + scrollY);
-  const distance = await page.locator('.num-track').evaluate(el => el.scrollWidth - innerWidth);
+  const height = await page.evaluate(() => innerHeight);
   await page.evaluate(y => window.scrollTo(0, y + 10), top);
-  await expect(page.locator('.num-step').first().locator('b')).toHaveText('1997');
-  await page.evaluate(y => window.scrollTo(0, y), top + distance + 20);
-  await expect.poll(() => page.locator('.num-track').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m41)).toBeLessThan(-distance * 0.9);
+  await expect.poll(() => page.locator('.num-step').first().locator('b').textContent()).not.toBe('26,6%');
+  await page.evaluate(y => window.scrollTo(0, y), top + height * 4);
   await expect.poll(() => page.locator('.num-step').last().locator('b').textContent()).toBe('26,6%');
 });
 

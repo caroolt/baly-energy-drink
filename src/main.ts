@@ -209,36 +209,37 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   window.addEventListener('wheel', endJump, { passive: true, signal: events.signal });
   window.addEventListener('touchstart', endJump, { passive: true, signal: events.signal });
 
-  // 4. Numbers: pinned; vertical scroll slides the four colour panels sideways. Each figure counts up
-  //    as its panel arrives, and its can swings with the travel.
+  // 4. Numbers: pinned on one black surface. Like a counter, each figure rolls up out of view as the
+  //    next rolls in and counts; the sentence rolls with it and only the can beside it changes flavor.
   const numbers = document.querySelector<HTMLElement>('.numbers')!;
-  const numberTrack = numbers.querySelector<HTMLElement>('.num-track')!;
   const steps = gsap.utils.toArray<HTMLElement>('.num-step');
   numbers.classList.add('is-pinned');
-  const slideDistance = () => numberTrack.scrollWidth - innerWidth;
-  const slide = gsap.to(numberTrack, {
-    x: () => -slideDistance(),
-    ease: 'none',
-    scrollTrigger: { trigger: numbers, start: 'top top', end: () => `+=${slideDistance()}`, pin: '.num-stage', scrub: 0.6, invalidateOnRefresh: true },
-  });
-  steps.forEach((step, i) => {
+  const counters = steps.map(step => {
     const number = step.querySelector<HTMLElement>('b')!;
     const target = Number(number.dataset.count);
-    const from = Number(number.dataset.from ?? 0);
     const decimals = Number(number.dataset.decimals ?? 0);
-    const state = { value: from };
+    const state = { value: Number(number.dataset.from ?? 0) };
     const render = () => { number.textContent = `${number.dataset.prefix ?? ''}${state.value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: false })}${number.dataset.suffix ?? ''}`; };
     render();
-    // The first panel is already in place when the pin starts, so it counts on the way in.
-    const trigger: ScrollTrigger.Vars = i === 0
-      ? { trigger: numbers, start: 'top 75%', end: 'top top', scrub: 0.5 }
-      : { trigger: step, containerAnimation: slide, start: 'left 85%', end: 'left 15%', scrub: 0.5 };
-    gsap.to(state, { value: target, ease: 'power2.out', onUpdate: render, scrollTrigger: trigger });
-    gsap.fromTo(step.querySelector('.num-can'), { rotation: i % 2 ? 22 : -22, yPercent: 12 }, {
-      rotation: i % 2 ? -10 : 10, yPercent: -6, ease: 'none',
-      scrollTrigger: i === 0 ? { trigger: numbers, start: 'top bottom', end: () => `top+=${innerWidth * 0.8} top`, scrub: true } : { trigger: step, containerAnimation: slide, start: 'left right', end: 'right left', scrub: true },
-    });
-    if (i) gsap.from(step.querySelectorAll('.num-figure, .num-line'), { xPercent: 18, ease: 'none', scrollTrigger: { trigger: step, containerAnimation: slide, start: 'left right', end: 'left left', scrub: true } });
+    return { state, target, render };
+  });
+  const rolls = (step: HTMLElement) => step.querySelectorAll('.num-roll > *');
+  const counter = gsap.timeline({ scrollTrigger: { trigger: numbers, start: 'top top', end: () => `+=${innerHeight * steps.length}`, pin: '.num-stage', scrub: 0.6, invalidateOnRefresh: true } });
+  steps.forEach((step, i) => {
+    const at = i;
+    const can = step.querySelector('.num-can');
+    if (i) {
+      const previous = steps[i - 1];
+      counter
+        .to(rolls(previous), { yPercent: -135, duration: 0.35, ease: 'power2.in', stagger: 0.05 }, at - 0.1)
+        .to(previous.querySelector('.num-can'), { yPercent: -45, rotation: i % 2 ? 14 : -14, opacity: 0, duration: 0.4, ease: 'power2.in' }, at - 0.1);
+    }
+    // The first figure is already on screen when the pin starts; it only counts.
+    if (i) counter
+      .fromTo(rolls(step), { yPercent: 135 }, { yPercent: 0, duration: 0.4, ease: 'power3.out', stagger: 0.06 }, at + 0.2)
+      .fromTo(can, { yPercent: 45, rotation: i % 2 ? -18 : 18, opacity: 0 }, { yPercent: 0, rotation: i % 2 ? -8 : 8, opacity: 1, duration: 0.45, ease: 'power3.out' }, at + 0.2);
+    else gsap.set(can, { rotation: 8 });
+    counter.to(counters[i].state, { value: counters[i].target, duration: 0.5, ease: 'power2.out', onUpdate: counters[i].render }, i ? at + 0.25 : 0.05);
   });
 
   // 5. Finale:  // 5. Finale: title lines and cans rise in, then cans drift at different speeds.
