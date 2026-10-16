@@ -101,20 +101,11 @@ test('preloader counts up, then lifts and unlocks scrolling', async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.classList.contains('is-loading'))).toBeFalsy();
 });
 
-test('story ribbon draws itself down the page past every milestone', async ({ page }) => {
+test('numbers section shows the four figures', async ({ page }) => {
   await page.goto('/');
   await ready(page);
-  await expect(page.locator('.milestone')).toHaveCount(13);
-  await expect(page.locator('.milestone').first()).toContainText('1997');
-  await expect(page.locator('.milestone').last()).toContainText('2025');
-  const drawn = () => page.locator('.story-path-line').evaluate(el => {
-    const path = el as SVGPathElement;
-    return 1 - parseFloat(path.style.strokeDashoffset || '0') / path.getTotalLength();
-  });
-  expect(await drawn()).toBeLessThan(0.05);
-  const flow = await page.locator('.story-flow').evaluate(el => ({ top: el.getBoundingClientRect().top + scrollY, height: el.offsetHeight }));
-  await page.evaluate(({ top, height }) => window.scrollTo(0, top + height / 2), flow);
-  await expect.poll(drawn).toBeGreaterThan(0.3);
+  await page.locator('#numeros').scrollIntoViewIfNeeded();
+  for (const figure of ['26,6%', '+43%', '1997', '5 mil m²']) await expect(page.locator('.numbers-grid')).toContainText(figure);
 });
 
 test('reduced motion changes flavors without splash animation or scroll smoothing', async ({ page }) => {
