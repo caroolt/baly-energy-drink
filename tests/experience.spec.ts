@@ -101,16 +101,16 @@ test('preloader counts up, then lifts and unlocks scrolling', async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.classList.contains('is-loading'))).toBeFalsy();
 });
 
-test('numbers scene counts each figure up as the page scrolls through it', async ({ page }) => {
+test('numbers panels slide sideways and count each figure up', async ({ page }) => {
   await page.goto('/');
   await ready(page);
   const top = await page.locator('#numeros').evaluate(el => el.getBoundingClientRect().top + scrollY);
-  const height = await page.evaluate(() => innerHeight);
+  const distance = await page.locator('.num-track').evaluate(el => el.scrollWidth - innerWidth);
   await page.evaluate(y => window.scrollTo(0, y + 10), top);
-  await expect(page.locator('.num-step').first()).toBeVisible();
-  await page.evaluate(y => window.scrollTo(0, y), top + height * 3.4);
+  await expect(page.locator('.num-step').first().locator('b')).toHaveText('1997');
+  await page.evaluate(y => window.scrollTo(0, y), top + distance + 20);
+  await expect.poll(() => page.locator('.num-track').evaluate(el => new DOMMatrix(getComputedStyle(el).transform).m41)).toBeLessThan(-distance * 0.9);
   await expect.poll(() => page.locator('.num-step').last().locator('b').textContent()).toBe('26,6%');
-  await expect(page.locator('.num-step').last()).toBeVisible();
 });
 
 test('reduced motion changes flavors without splash animation or scroll smoothing', async ({ page }) => {

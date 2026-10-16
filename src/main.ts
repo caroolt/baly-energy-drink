@@ -5,7 +5,6 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { flavors, productPath } from './flavors';
 import { artMarkup } from './art';
 import { createFlavorSlider } from './slider';
-import { splashMarkup } from './art';
 import { runPreloader } from './preloader';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
@@ -153,13 +152,17 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
     .to('.hero-title', { y: desktop ? -90 : -30, ease: 'none' }, 0)
     .to('.hero-bottom', { opacity: 0, y: -30, ease: 'none', immediateRender: false }, 0);
 
-  // 2. Manifesto: pinned, words light up in order.
-  // 2. Manifesto: pinned. Words light up, "um sabor só" is struck out, the answer and seven dots land,
-  //    while two cans drift through the frame.
-  gsap.timeline({ scrollTrigger: { trigger: '.manifesto', start: 'top top', end: () => `+=${innerHeight * 1.8}`, pin: true, scrub: 0.6 } })
+  // 2. Manifesto: pinned. Words light up, then "um sabor só" is struck out by a line drawn left to right
+  //    in step with the scroll, the answer and dots land, and the cans rush through the frame.
+  const strike = document.querySelector<SVGPathElement>('.m-line path')!;
+  gsap.timeline({ scrollTrigger: { trigger: '.manifesto', start: 'top top', end: () => `+=${innerHeight * 2.2}`, pin: true, scrub: 0.6 } })
     .fromTo('.m-word', { opacity: 0.12 }, { opacity: 1, stagger: 0.12, ease: 'none', duration: 0.4 }, 0)
-    .fromTo('.m-line path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, ease: 'power2.inOut', duration: 0.6, immediateRender: true }, '>')
-    .to('.m-strike .m-word', { opacity: 0.35, duration: 0.3 }, '<0.4')
+    .addLabel('strike')
+    // Hidden until the stroke starts: an empty dash with a round cap would otherwise show as a dot.
+    .set(strike, { opacity: 0, strokeDashoffset: 1 }, 0)
+    .set(strike, { opacity: 1 }, 'strike')
+    .to(strike, { strokeDashoffset: 0, ease: 'none', duration: 1.1 }, 'strike')
+    .to('.m-strike .m-word', { opacity: 0.35, duration: 0.4 }, 'strike+=0.6')
     .from('.m-answer', { yPercent: 60, opacity: 0, duration: 0.5, ease: 'power2.out' }, '>-0.1')
     .from('.m-answer .dots i', { scale: 0, stagger: 0.07, duration: 0.3, ease: 'back.out(2)' }, '<0.2')
     // Each can crosses the full screen in a short slice of the scroll, so they rush past faster than the page moves.
@@ -206,17 +209,19 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   window.addEventListener('wheel', endJump, { passive: true, signal: events.signal });
   window.addEventListener('touchstart', endJump, { passive: true, signal: events.signal });
 
-  // 4. Numbers: pinned. One figure per screen; the next flavor's splash floods in behind it, the old
-  //    figure leaves upward, the new one rises and counts up with the scroll, its can swings in.
+  // 4. Numbers: pinned; vertical scroll slides the four colour panels sideways. Each figure counts up
+  //    as its panel arrives, and its can swings with the travel.
   const numbers = document.querySelector<HTMLElement>('.numbers')!;
+  const numberTrack = numbers.querySelector<HTMLElement>('.num-track')!;
   const steps = gsap.utils.toArray<HTMLElement>('.num-step');
-  const splashes = numbers.querySelector<HTMLElement>('.num-splashes')!;
   numbers.classList.add('is-pinned');
-  splashes.innerHTML = steps.map(() => splashMarkup()).join('');
-  const blots = Array.from(splashes.querySelectorAll<SVGSVGElement>('svg'));
-  const cover = () => Math.hypot(innerWidth, innerHeight) * 2.7 / Math.min(innerWidth * 0.65, 650);
-  blots.forEach((blot, i) => gsap.set(blot, { fill: steps[i].style.getPropertyValue('--bg'), xPercent: -50, yPercent: -50, transformOrigin: '50% 50%', scale: i ? 0 : cover(), rotation: -18 }));
-  const counters = steps.map(step => {
+  const slideDistance = () => numberTrack.scrollWidth - innerWidth;
+  const slide = gsap.to(numberTrack, {
+    x: () => -slideDistance(),
+    ease: 'none',
+    scrollTrigger: { trigger: numbers, start: 'top top', end: () => `+=${slideDistance()}`, pin: '.num-stage', scrub: 0.6, invalidateOnRefresh: true },
+  });
+  steps.forEach((step, i) => {
     const number = step.querySelector<HTMLElement>('b')!;
     const target = Number(number.dataset.count);
     const from = Number(number.dataset.from ?? 0);
@@ -224,31 +229,17 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
     const state = { value: from };
     const render = () => { number.textContent = `${number.dataset.prefix ?? ''}${state.value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: false })}${number.dataset.suffix ?? ''}`; };
     render();
-    return { state, target, render };
+    // The first panel is already in place when the pin starts, so it counts on the way in.
+    const trigger: ScrollTrigger.Vars = i === 0
+      ? { trigger: numbers, start: 'top 75%', end: 'top top', scrub: 0.5 }
+      : { trigger: step, containerAnimation: slide, start: 'left 85%', end: 'left 15%', scrub: 0.5 };
+    gsap.to(state, { value: target, ease: 'power2.out', onUpdate: render, scrollTrigger: trigger });
+    gsap.fromTo(step.querySelector('.num-can'), { rotation: i % 2 ? 22 : -22, yPercent: 12 }, {
+      rotation: i % 2 ? -10 : 10, yPercent: -6, ease: 'none',
+      scrollTrigger: i === 0 ? { trigger: numbers, start: 'top bottom', end: () => `top+=${innerWidth * 0.8} top`, scrub: true } : { trigger: step, containerAnimation: slide, start: 'left right', end: 'right left', scrub: true },
+    });
+    if (i) gsap.from(step.querySelectorAll('.num-figure, .num-line'), { xPercent: 18, ease: 'none', scrollTrigger: { trigger: step, containerAnimation: slide, start: 'left right', end: 'left left', scrub: true } });
   });
-  const enter = (tl: gsap.core.Timeline, i: number, at: number) => {
-    const step = steps[i];
-    tl.set(step, { visibility: 'visible' }, at)
-      .fromTo(step.querySelector('.num-figure'), { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power3.out' }, at)
-      .fromTo(step.querySelector('.num-line'), { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' }, at + 0.1)
-      .fromTo(step.querySelector('.num-can'), { yPercent: 60, rotation: i % 2 ? 14 : -14, opacity: 0 }, { yPercent: 0, rotation: i % 2 ? -10 : 10, opacity: 1, duration: 0.45, ease: 'power3.out' }, at + 0.05)
-      .to(counters[i].state, { value: counters[i].target, duration: 0.55, ease: 'power2.out', onUpdate: counters[i].render }, at + 0.05);
-  };
-  const leave = (tl: gsap.core.Timeline, i: number, at: number) => {
-    const step = steps[i];
-    tl.to(step.querySelectorAll('.num-figure, .num-line'), { yPercent: -60, opacity: 0, duration: 0.3, ease: 'power2.in', stagger: 0.04 }, at)
-      .to(step.querySelector('.num-can'), { yPercent: -70, rotation: i % 2 ? -10 : 10, opacity: 0, duration: 0.35, ease: 'power2.in' }, at)
-      .set(step, { visibility: 'hidden' }, at + 0.4);
-  };
-  const story = gsap.timeline({ scrollTrigger: { trigger: numbers, start: 'top top', end: () => `+=${innerHeight * (steps.length - 0.4)}`, pin: '.num-stage', scrub: 0.6, invalidateOnRefresh: true } });
-  enter(story, 0, 0);
-  for (let i = 1; i < steps.length; i++) {
-    const at = i;
-    leave(story, i - 1, at - 0.05);
-    story.fromTo(blots[i], { scale: 0, rotation: -18 }, { scale: () => cover(), rotation: 12, duration: 0.6, ease: 'power2.inOut', immediateRender: false }, at);
-    enter(story, i, at + 0.3);
-  }
-  story.to({}, { duration: 0.3 });
 
   // 5. Finale:  // 5. Finale: title lines and cans rise in, then cans drift at different speeds.
   gsap.from('.finale h2 .line > span', { yPercent: 110, duration: 1, stagger: 0.1, ease: 'power4.out', scrollTrigger: { trigger: '.finale', start: 'top 60%' } });
