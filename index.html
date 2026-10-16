@@ -5,9 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fbbe00" />
     <meta name="description" content="Sete sabores, sete realidades. Uma experiência conceitual independente inspirada na BALY Energy Drink. Explore UNLEASH THE FLAVOR." />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
     <title>BALY — Unleash the Flavor · Conceito independente</title>
   </head>
   <body>
+    <div id="preloader" aria-hidden="true">
+      <div class="pl-top"><span>BALY ENERGY DRINK</span><span>SABORES QUE SÃO A CARA DO BRASIL</span></div>
+      <div class="pl-logo">
+        <div class="pl-fill"><div class="pl-liquid"><svg class="pl-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20Q50 0 100 20T200 20T300 20T400 20V40H0Z"/></svg></div><div class="pl-bubbles"></div></div>
+        <div class="pl-outline"></div>
+      </div>
+      <div class="pl-bottom"><span class="pl-flavor">MISTURANDO OS SABORES</span><span class="pl-count"><b>0</b><i>%</i></span></div>
+      <div class="pl-flood"><svg class="pl-wave" viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20Q50 0 100 20T200 20T300 20T400 20V40H0Z"/></svg></div>
+    </div>
+    <noscript><style>#preloader{display:none}</style></noscript>
     <a class="skip-link" href="#sabores">Ir para os sabores</a>
     <div id="smooth-wrapper">
       <div id="smooth-content">
@@ -25,13 +37,18 @@
               <img src="/assets/products/tradicional.png" alt="Lata BALY Tradicional" width="1080" height="1446" fetchpriority="high" />
             </div>
             <div class="hero-bottom">
-              <div class="hero-copy"><p>O próximo sabor <strong>muda tudo.</strong></p><span class="hero-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <div class="hero-copy"><p>O próximo sabor <strong>muda tudo.</strong></p><span class="hero-dots dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
               <span class="scroll-cue" aria-hidden="true"><span>ROLE</span><i></i></span>
             </div>
           </section>
 
           <section class="manifesto" aria-labelledby="manifesto-title">
-            <h2 id="manifesto-title">A VIDA É MUITO GRANDE PRA <span>UM SABOR SÓ.</span></h2>
+            <div class="m-can m-can-a product-slot" aria-hidden="true"><img data-src="/assets/products/tropical.png" alt="" width="1086" height="1448" loading="lazy" decoding="async" /></div>
+            <div class="m-can m-can-b product-slot" aria-hidden="true"><img data-src="/assets/products/melancia.png" alt="" width="1086" height="1448" loading="lazy" decoding="async" /></div>
+            <div class="m-inner">
+              <h2 id="manifesto-title">A VIDA É MUITO GRANDE PRA <span class="m-strike">UM SABOR SÓ.<svg class="m-line" viewBox="0 0 600 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M4 26C120 12 230 30 340 18S520 8 596 20"/></svg></span></h2>
+              <p class="m-answer">Por isso são sete. <span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></p>
+            </div>
           </section>
 
           <section id="sabores" class="flavors" aria-label="Explore os sete sabores BALY" aria-roledescription="carrossel" style="--scene-bg: #191919; --scene-ink: #fbbe00; --scene-accent: #ffdd69">

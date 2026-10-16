@@ -1,4 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+// The preloader locks scrolling until it lifts; interactions start after it is gone.
+const ready = (page: Page) => expect(page.locator('#preloader')).toHaveCount(0, { timeout: 10000 });
 
 const names = ['Tradicional', 'Tropical', 'Maçã Verde', 'Melancia', 'Morango e Pêssego', 'Coco e Açaí', 'Tadaly'];
 
@@ -24,6 +27,7 @@ test('all seven flavors, wrapping, and live announcements', async ({ page }) => 
 
 test('rapid choices settle on the last requested flavor and keyboard stays usable', async ({ page }) => {
   await page.goto('/#sabores');
+  await ready(page);
   await page.getByRole('button', { name: 'Explorar Tropical', exact: true }).click();
   await page.getByRole('button', { name: 'Explorar Melancia', exact: true }).click();
   await page.getByRole('button', { name: 'Explorar Coco e Açaí', exact: true }).click();
@@ -74,6 +78,7 @@ test('original assets and final lineup load without missing images', async ({ pa
 
 test('scrolling the page changes the flavor on its own, with snapping and no horizontal input', async ({ page }) => {
   await page.goto('/#sabores');
+  await ready(page);
   await expect(page.getByRole('status')).toHaveText('Sabor 1 de 7: Tradicional.');
   const start = await page.evaluate(() => scrollY);
   await page.mouse.move(700, 400);
@@ -89,9 +94,17 @@ test('scrolling the page changes the flavor on its own, with snapping and no hor
   await expect(page.locator('.current-number')).toHaveText(String(before - 1).padStart(2, '0'));
 });
 
+test('preloader counts up, then lifts and unlocks scrolling', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#preloader')).toBeVisible();
+  await ready(page);
+  expect(await page.evaluate(() => document.documentElement.classList.contains('is-loading'))).toBeFalsy();
+});
+
 test('reduced motion changes flavors without splash animation or scroll smoothing', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#sabores');
+  await expect(page.locator('#preloader')).toHaveCount(0);
   await page.getByRole('button', { name: 'Explorar Melancia', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Sabor 4 de 7: Melancia.');
   await expect(page.locator('#sabores')).toHaveAttribute('data-transitioning', 'false');

@@ -21,6 +21,24 @@ h1,h2,h3,p{margin:0}
 .skip-link{position:fixed;left:16px;top:16px;z-index:100;padding:16px;background:#141414;color:#fbbe00;transform:translateY(-150%)}
 .skip-link:focus{transform:none}
 
+/* Preloader: the BALY wordmark fills with a colour-shifting, bubbling liquid that overflows and floods the screen. */
+html.is-loading{overflow:hidden}
+#preloader{position:fixed;inset:0;z-index:200;background:var(--yellow);color:var(--black);display:grid;place-items:center;overflow:hidden;--liq:#f44958}
+.pl-top{position:absolute;top:34px;left:var(--gutter);right:var(--gutter);display:flex;justify-content:space-between;gap:24px;font-size:12px;font-weight:700;letter-spacing:.16em}
+.pl-logo{position:relative;width:min(74vw,760px);aspect-ratio:1352/620}
+.pl-outline,.pl-fill{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.pl-outline{background:var(--black);-webkit-mask-image:url(/assets/brand/logo-outline-mask.png);mask-image:url(/assets/brand/logo-outline-mask.png)}
+.pl-fill{overflow:hidden;background:#14141412;-webkit-mask-image:url(/assets/brand/logo-fill-mask.png);mask-image:url(/assets/brand/logo-fill-mask.png)}
+.pl-liquid{position:absolute;left:-5%;right:-5%;bottom:0;height:112%;background:var(--liq)}
+.pl-wave{position:absolute;left:0;bottom:100%;width:200%;height:clamp(14px,2.4vw,26px);fill:var(--liq);margin-bottom:-1px}
+.pl-bubbles i{position:absolute;bottom:-12px;border-radius:50%;background:#ffffffa6}
+.pl-bottom{position:absolute;left:var(--gutter);right:var(--gutter);bottom:34px;display:flex;justify-content:space-between;align-items:flex-end;font-size:12px;font-weight:700;letter-spacing:.16em}
+.pl-count{font:800 clamp(44px,5.4vw,96px)/1 var(--display);letter-spacing:0;font-variant-numeric:tabular-nums}
+.pl-count i{font-style:normal;font-size:.5em;opacity:.6}
+.pl-flood{position:absolute;inset:0;background:var(--liq);pointer-events:none;visibility:hidden}
+.pl-flood .pl-wave{height:clamp(24px,4vw,56px)}
+@media(max-width:700px){.pl-logo{width:84vw}.pl-top{top:26px;font-size:10px}.pl-top span:last-child{text-align:right;max-width:20ch}.pl-bottom{bottom:26px;font-size:10px}}
+
 /* Masked line reveals share one structure: .line clips, its child slides. */
 .line{display:block;overflow:hidden;padding:.05em 0 .03em}
 .line>span{display:block}
@@ -47,19 +65,29 @@ h1,h2,h3,p{margin:0}
 .hero-product img{rotate:-13deg}
 .hero-bottom{position:absolute;left:var(--gutter);right:var(--gutter);bottom:44px;display:flex;align-items:flex-end;justify-content:space-between;z-index:4}
 .hero-copy{display:flex;flex-direction:column;gap:18px}
-.hero-dots{display:flex;gap:8px}
-.hero-dots i{width:14px;height:14px;border-radius:50%;background:var(--c)}
-.hero-dots i:nth-child(1){--c:#141414}.hero-dots i:nth-child(2){--c:#ff6b19}.hero-dots i:nth-child(3){--c:#2b9537}.hero-dots i:nth-child(4){--c:#f44958}.hero-dots i:nth-child(5){--c:#f3294d}.hero-dots i:nth-child(6){--c:#9571ae}.hero-dots i:nth-child(7){--c:#1648e9}
+.dots{display:flex;gap:8px}
+.dots i{width:14px;height:14px;border-radius:50%;background:var(--c)}
+.dots i:nth-child(1){--c:#141414}
+.m-answer .dots i:nth-child(1){--c:#fbbe00}.dots i:nth-child(2){--c:#ff6b19}.dots i:nth-child(3){--c:#2b9537}.dots i:nth-child(4){--c:#f44958}.dots i:nth-child(5){--c:#f3294d}.dots i:nth-child(6){--c:#9571ae}.dots i:nth-child(7){--c:#1648e9}
 .hero-bottom p{font-size:clamp(18px,1.9vw,28px);line-height:1.3;letter-spacing:-.02em}
 .hero-bottom strong{font-weight:700;display:block}
 .scroll-cue{display:flex;align-items:center;gap:14px;font-size:11px;font-weight:700;letter-spacing:.2em}
 .scroll-cue i{display:block;width:1.5px;height:56px;background:currentColor;transform-origin:top;animation:cue 2.2s cubic-bezier(.65,0,.35,1) infinite}
 @keyframes cue{0%{transform:scaleY(0)}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
-/* Manifesto: words light up as the section is pinned. */
-.manifesto{height:100svh;min-height:560px;padding:0 var(--gutter);display:flex;align-items:center;background:var(--black);color:var(--yellow);overflow:hidden}
-.manifesto h2{font:800 clamp(58px,9.6vw,172px)/.9 var(--display);letter-spacing:-.015em;max-width:1200px}
-.manifesto h2 span{color:var(--cream)}
+/* Manifesto: pinned; words light up, the last phrase gets struck out, the answer lands. */
+.manifesto{position:relative;height:100svh;min-height:560px;padding:0 var(--gutter);display:flex;align-items:center;background:var(--black);color:var(--yellow);overflow:hidden;isolation:isolate}
+.m-inner{position:relative;z-index:2}
+.manifesto h2{font:800 clamp(58px,9.2vw,166px)/.9 var(--display);letter-spacing:-.015em;max-width:1150px}
+.m-strike{position:relative;color:var(--cream);white-space:nowrap}
+.m-line{position:absolute;left:-2%;top:42%;width:104%;height:.3em;overflow:visible;pointer-events:none}
+.m-line path{fill:none;stroke:var(--yellow);stroke-width:9;stroke-linecap:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
+.m-answer{display:flex;align-items:center;flex-wrap:wrap;gap:20px;margin-top:40px;font:800 clamp(30px,3.6vw,64px)/1 var(--display);letter-spacing:.005em;color:var(--cream)}
+.m-answer .dots i{width:clamp(14px,1.2vw,20px);height:clamp(14px,1.2vw,20px)}
+.m-can{position:absolute;z-index:1;width:clamp(150px,17vw,300px);aspect-ratio:1086/1448;pointer-events:none}
+.m-can img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(20px 30px 24px #0008)}
+.m-can-a{right:7%;top:-9%;rotate:24deg}
+.m-can-b{right:19%;bottom:-16%;rotate:-16deg;width:clamp(130px,14vw,250px)}
 
 /* Flavor stage: one flavor, one colour, one can. */
 .flavors{position:relative;height:100svh;min-height:640px;overflow:hidden;isolation:isolate;color:var(--scene-ink);background:var(--scene-bg)}
@@ -70,7 +98,8 @@ h1,h2,h3,p{margin:0}
 .flavor-word.long-word{font-size:clamp(100px,17.6vw,300px)}
 .scene-art{position:absolute;inset:0;z-index:1;color:var(--accent)}
 .scene-disc{position:absolute;left:62%;top:52%;width:min(62vh,46vw);aspect-ratio:1;border-radius:50%;background:var(--accent);opacity:.5;transform:translate(-50%,-50%)}
-.scene-copy{position:absolute;left:var(--gutter);top:50%;translate:0 -52%;z-index:4;max-width:min(35%,470px)}
+/* Centered with flex, not transforms: GSAP owns this element's transform during transitions. */
+.scene-copy{position:absolute;left:var(--gutter);top:0;bottom:110px;z-index:4;max-width:min(35%,470px);display:flex;flex-direction:column;justify-content:center}
 .scene-copy h2{font:800 clamp(42px,5.2vw,92px)/.92 var(--display);text-transform:uppercase;letter-spacing:-.015em;white-space:pre-line}
 .scene-desc{font-size:clamp(14px,1.05vw,16px);line-height:1.6;margin-top:20px;opacity:.9}
 .scene-chips{list-style:none;margin:20px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
@@ -125,7 +154,6 @@ h1,h2,h3,p{margin:0}
 .lineup-item.asset-missing::after{inset:15% 12%;font-size:9px;padding:5px}
 .asset-missing img{visibility:hidden}
 
-@media(min-width:1800px){.scene-copy{top:37%}}
 @media(max-width:1000px){
   .hero-title{font-size:17vw}
   .hero-product{width:46%;right:3%;top:16%;height:72%}
@@ -152,13 +180,16 @@ h1,h2,h3,p{margin:0}
   .hero-bottom{bottom:28px}
   .hero-bottom p{font-size:18px}
   .scroll-cue i{height:40px}
-  .manifesto h2{font-size:19vw}
+  .manifesto h2{font-size:17vw}
+  .m-answer{font-size:30px;gap:14px;margin-top:28px}
+  .m-can-a{width:34vw;right:-6%;top:-5%}
+  .m-can-b{width:30vw;right:auto;left:-4%;bottom:-9%}
   .flavors{min-height:620px}
   .flavor-word{top:11%;font-size:30vw;opacity:.16}
   .flavor-word.long-word{font-size:22vw;top:12%}
   .scene-disc{left:50%;top:38%;width:88vw}
   .scene-product{height:46%;width:80%;left:12%;top:12%}
-  .scene-copy{top:60%;translate:none;max-width:84%}
+  .scene-copy{top:60%;bottom:auto;display:block;max-width:84%}
   .scene-copy h2{font-size:clamp(40px,12vw,52px)}
   .scene-desc{font-size:13px;margin-top:10px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .scene-chips{margin-top:12px;gap:6px}.scene-chips li{padding:5px 10px;font-size:11px}

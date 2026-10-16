@@ -5,6 +5,7 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { flavors, productPath } from './flavors';
 import { artMarkup } from './art';
 import { createFlavorSlider } from './slider';
+import { runPreloader } from './preloader';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
@@ -27,18 +28,18 @@ scenes.innerHTML = flavors.map((flavor, index) => `
   </article>
 `).join('');
 
-// Manifesto words are split so scroll can light them up one by one.
+// Manifesto words are split so scroll can light them up one by one (the strike SVG is left alone).
 const manifesto = document.querySelector<HTMLElement>('#manifesto-title')!;
-const wordMarkup = (text: string) => text.trim().split(/\s+/).map(word => `<span class="m-word">${word}</span>`).join(' ');
-manifesto.querySelectorAll<HTMLElement>('span').forEach(span => { span.innerHTML = wordMarkup(span.textContent!); });
-manifesto.childNodes.forEach(node => {
-  if (node.nodeType === Node.TEXT_NODE && node.textContent!.trim()) {
-    const holder = document.createElement('span');
-    holder.innerHTML = wordMarkup(node.textContent!) + ' ';
-    holder.style.color = 'inherit';
-    node.replaceWith(...holder.childNodes);
-  }
-});
+const splitWords = (element: Element) => {
+  Array.from(element.childNodes).forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE && node.textContent!.trim()) {
+      const holder = document.createElement('span');
+      holder.innerHTML = node.textContent!.replace(/\S+/g, word => `<span class="m-word">${word}</span>`);
+      node.replaceWith(...holder.childNodes);
+    } else if (node instanceof HTMLElement) splitWords(node);
+  });
+};
+splitWords(manifesto);
 
 document.querySelector('#flavor-index')!.innerHTML = flavors.map((flavor, index) => `<button type="button" data-flavor="${flavor.id}" aria-label="Explorar ${flavor.name}" aria-current="${index === 0}"></button>`).join('');
 
@@ -69,6 +70,13 @@ const assetsObserver = new IntersectionObserver(entries => {
   });
 }, { rootMargin: '200px' });
 assetsObserver.observe(document.querySelector('.lineup')!);
+assetsObserver.observe(document.querySelector('.manifesto')!);
+
+const revealed = runPreloader({
+  // Melancia → Maçã Verde → Coco e Açaí → Tadaly → Morango e Pêssego → Tradicional.
+  colors: ['#f44958', '#2b9537', '#9571ae', '#1648e9', '#f3294d', '#141414'],
+  ready: Promise.all([document.fonts.ready, document.querySelector<HTMLImageElement>('.hero-product img')!.decode()]),
+});
 
 const slider = createFlavorSlider(document.querySelector('#sabores')!);
 const media = gsap.matchMedia();
@@ -120,7 +128,8 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   }
 
   // 1. Hero: masked title lines, the can drops in, then everything drifts apart on scroll.
-  const intro = gsap.timeline({ defaults: { ease: 'power4.out' } });
+  const intro = gsap.timeline({ defaults: { ease: 'power4.out' }, paused: true });
+  void revealed.then(() => intro.play());
   intro
     .from('.hero-title .line > span', { yPercent: 110, duration: 1.1, stagger: 0.12 })
     .from('.hero-disc', { scale: 0, duration: 1.3, ease: 'expo.out' }, 0)
@@ -134,8 +143,16 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
     .to('.hero-bottom', { opacity: 0, y: -30, ease: 'none', immediateRender: false }, 0);
 
   // 2. Manifesto: pinned, words light up in order.
-  gsap.timeline({ scrollTrigger: { trigger: '.manifesto', start: 'top top', end: () => `+=${innerHeight * 1.1}`, pin: true, scrub: 0.5 } })
-    .fromTo('.m-word', { opacity: 0.14 }, { opacity: 1, stagger: 0.25, ease: 'none', duration: 1 });
+  // 2. Manifesto: pinned. Words light up, "um sabor só" is struck out, the answer and seven dots land,
+  //    while two cans drift through the frame.
+  gsap.timeline({ scrollTrigger: { trigger: '.manifesto', start: 'top top', end: () => `+=${innerHeight * 1.8}`, pin: true, scrub: 0.6 } })
+    .fromTo('.m-word', { opacity: 0.12 }, { opacity: 1, stagger: 0.12, ease: 'none', duration: 0.4 }, 0)
+    .fromTo('.m-line path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, ease: 'power1.inOut', duration: 0.7 }, '>')
+    .to('.m-strike .m-word', { opacity: 0.35, duration: 0.3 }, '<0.4')
+    .from('.m-answer', { yPercent: 60, opacity: 0, duration: 0.5, ease: 'power2.out' }, '>-0.1')
+    .from('.m-answer .dots i', { scale: 0, stagger: 0.07, duration: 0.3, ease: 'back.out(2)' }, '<0.2')
+    .fromTo('.m-can-a', { yPercent: -40, rotation: -10 }, { yPercent: 35, rotation: 12, ease: 'none', duration: 3.2 }, 0)
+    .fromTo('.m-can-b', { yPercent: 45, rotation: 8 }, { yPercent: -30, rotation: -10, ease: 'none', duration: 3.2 }, 0);
 
   // 3. Flavor stage: pinned, scroll position chooses the flavor and snaps between them.
   const stage = document.querySelector<HTMLElement>('#sabores')!;
