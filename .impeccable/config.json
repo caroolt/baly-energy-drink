@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-16T21:05:04.033Z",
+        "reason": "Claude: false positive. Type sizes live in src/style.css, not index.html; hero h1 is clamp(84px..236px), h2s 58-172px, body 15-28px, labels 12px, all far above 1.25x steps."
+      }
+    ]
+  }
+}
