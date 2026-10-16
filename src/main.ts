@@ -5,6 +5,7 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 import { flavors, productPath } from './flavors';
 import { artMarkup } from './art';
 import { createFlavorSlider } from './slider';
+import { splashMarkup } from './art';
 import { runPreloader } from './preloader';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
@@ -81,6 +82,7 @@ const assetsObserver = new IntersectionObserver(entries => {
 }, { rootMargin: '200px' });
 assetsObserver.observe(document.querySelector('.lineup')!);
 assetsObserver.observe(document.querySelector('.manifesto')!);
+assetsObserver.observe(document.querySelector('.numbers')!);
 
 const revealed = runPreloader({
   color: '#141414',
@@ -204,23 +206,49 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   window.addEventListener('wheel', endJump, { passive: true, signal: events.signal });
   window.addEventListener('touchstart', endJump, { passive: true, signal: events.signal });
 
-  // 4. Numbers: each figure counts up with the scroll, landing on its value as the block settles in view.
-  gsap.utils.toArray<HTMLElement>('.numbers-grid b').forEach(number => {
+  // 4. Numbers: pinned. One figure per screen; the next flavor's splash floods in behind it, the old
+  //    figure leaves upward, the new one rises and counts up with the scroll, its can swings in.
+  const numbers = document.querySelector<HTMLElement>('.numbers')!;
+  const steps = gsap.utils.toArray<HTMLElement>('.num-step');
+  const splashes = numbers.querySelector<HTMLElement>('.num-splashes')!;
+  numbers.classList.add('is-pinned');
+  splashes.innerHTML = steps.map(() => splashMarkup()).join('');
+  const blots = Array.from(splashes.querySelectorAll<SVGSVGElement>('svg'));
+  const cover = () => Math.hypot(innerWidth, innerHeight) * 2.7 / Math.min(innerWidth * 0.65, 650);
+  blots.forEach((blot, i) => gsap.set(blot, { fill: steps[i].style.getPropertyValue('--bg'), xPercent: -50, yPercent: -50, transformOrigin: '50% 50%', scale: i ? 0 : cover(), rotation: -18 }));
+  const counters = steps.map(step => {
+    const number = step.querySelector<HTMLElement>('b')!;
     const target = Number(number.dataset.count);
-    const decimals = Number(number.dataset.decimals ?? 0);
-    const format = (value: number) => `${number.dataset.prefix ?? ''}${value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: false })}${number.dataset.suffix ?? ''}`;
     const from = Number(number.dataset.from ?? 0);
-    const counter = { value: from };
-    gsap.to(counter, {
-      value: target, ease: 'power2.out',
-      onUpdate: () => {
-        number.textContent = format(counter.value);
-        number.style.setProperty('--fill', `${((counter.value - from) / (target - from)) * 100}%`);
-      },
-      scrollTrigger: { trigger: number, start: 'top 95%', end: 'top 45%', scrub: 0.5 },
-    });
+    const decimals = Number(number.dataset.decimals ?? 0);
+    const state = { value: from };
+    const render = () => { number.textContent = `${number.dataset.prefix ?? ''}${state.value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: false })}${number.dataset.suffix ?? ''}`; };
+    render();
+    return { state, target, render };
   });
-  gsap.from('.numbers-grid > div', { y: 50, opacity: 0, duration: 0.9, stagger: 0.1, ease: 'power3.out', scrollTrigger: { trigger: '.numbers-grid', start: 'top 80%' } });
+  const enter = (tl: gsap.core.Timeline, i: number, at: number) => {
+    const step = steps[i];
+    tl.set(step, { visibility: 'visible' }, at)
+      .fromTo(step.querySelector('.num-figure'), { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power3.out' }, at)
+      .fromTo(step.querySelector('.num-line'), { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' }, at + 0.1)
+      .fromTo(step.querySelector('.num-can'), { yPercent: 60, rotation: i % 2 ? 14 : -14, opacity: 0 }, { yPercent: 0, rotation: i % 2 ? -10 : 10, opacity: 1, duration: 0.45, ease: 'power3.out' }, at + 0.05)
+      .to(counters[i].state, { value: counters[i].target, duration: 0.55, ease: 'power2.out', onUpdate: counters[i].render }, at + 0.05);
+  };
+  const leave = (tl: gsap.core.Timeline, i: number, at: number) => {
+    const step = steps[i];
+    tl.to(step.querySelectorAll('.num-figure, .num-line'), { yPercent: -60, opacity: 0, duration: 0.3, ease: 'power2.in', stagger: 0.04 }, at)
+      .to(step.querySelector('.num-can'), { yPercent: -70, rotation: i % 2 ? -10 : 10, opacity: 0, duration: 0.35, ease: 'power2.in' }, at)
+      .set(step, { visibility: 'hidden' }, at + 0.4);
+  };
+  const story = gsap.timeline({ scrollTrigger: { trigger: numbers, start: 'top top', end: () => `+=${innerHeight * (steps.length - 0.4)}`, pin: '.num-stage', scrub: 0.6, invalidateOnRefresh: true } });
+  enter(story, 0, 0);
+  for (let i = 1; i < steps.length; i++) {
+    const at = i;
+    leave(story, i - 1, at - 0.05);
+    story.fromTo(blots[i], { scale: 0, rotation: -18 }, { scale: () => cover(), rotation: 12, duration: 0.6, ease: 'power2.inOut', immediateRender: false }, at);
+    enter(story, i, at + 0.3);
+  }
+  story.to({}, { duration: 0.3 });
 
   // 5. Finale:  // 5. Finale: title lines and cans rise in, then cans drift at different speeds.
   gsap.from('.finale h2 .line > span', { yPercent: 110, duration: 1, stagger: 0.1, ease: 'power4.out', scrollTrigger: { trigger: '.finale', start: 'top 60%' } });
@@ -251,6 +279,7 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
     pointerEvents.abort();
     endJump();
     slider.setDriver(null);
+    numbers.classList.remove('is-pinned');
     pin = undefined;
     smoother?.kill();
     smoother = undefined;

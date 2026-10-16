@@ -101,11 +101,16 @@ test('preloader counts up, then lifts and unlocks scrolling', async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.classList.contains('is-loading'))).toBeFalsy();
 });
 
-test('numbers section shows the four figures', async ({ page }) => {
+test('numbers scene counts each figure up as the page scrolls through it', async ({ page }) => {
   await page.goto('/');
   await ready(page);
-  await page.locator('#numeros').scrollIntoViewIfNeeded();
-  for (const figure of ['26,6%', '+43%', '1997', '5 mil m²']) await expect(page.locator('.numbers-grid')).toContainText(figure);
+  const top = await page.locator('#numeros').evaluate(el => el.getBoundingClientRect().top + scrollY);
+  const height = await page.evaluate(() => innerHeight);
+  await page.evaluate(y => window.scrollTo(0, y + 10), top);
+  await expect(page.locator('.num-step').first()).toBeVisible();
+  await page.evaluate(y => window.scrollTo(0, y), top + height * 3.4);
+  await expect.poll(() => page.locator('.num-step').last().locator('b').textContent()).toBe('26,6%');
+  await expect(page.locator('.num-step').last()).toBeVisible();
 });
 
 test('reduced motion changes flavors without splash animation or scroll smoothing', async ({ page }) => {

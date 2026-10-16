@@ -129,15 +129,21 @@ html.is-loading{overflow:hidden}
 .arrow-button:hover:not(:disabled){background:color-mix(in srgb,currentColor 14%,transparent);transform:scale(1.07)}
 .arrow-button:disabled{opacity:.3;cursor:default}
 
-/* Numbers: four facts as huge outlined figures that fill with yellow, like the logo in the loader. */
-.numbers{background:var(--black);color:var(--cream);padding:16vh var(--gutter);overflow:hidden}
-.numbers-kicker{font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--yellow)}
-.numbers-grid{margin:40px 0 0;display:flex;flex-direction:column;gap:clamp(24px,5vh,64px)}
-.numbers-grid div{display:flex;align-items:flex-end;gap:clamp(18px,3vw,48px)}
-.numbers-grid div:nth-child(even){flex-direction:row-reverse;text-align:right}
-.numbers-grid dd{margin:0;display:contents}
-.numbers-grid b{--fill:100%;display:block;font:900 clamp(110px,19vw,340px)/.8 var(--display);letter-spacing:-.02em;white-space:nowrap;font-variant-numeric:tabular-nums;color:transparent;-webkit-text-stroke:clamp(1.5px,.18vw,3px) var(--yellow);background:linear-gradient(to top,var(--yellow) var(--fill),transparent var(--fill));-webkit-background-clip:text;background-clip:text;padding:.16em .04em .14em;margin:-.16em -.04em -.14em}
-.numbers-grid span{display:block;max-width:16ch;padding-bottom:.6em;font-size:clamp(13px,1vw,16px);font-weight:700;letter-spacing:.14em;line-height:1.5;text-transform:uppercase;opacity:.85}
+/* Numbers: one figure at a time, each in a flavor's colour world with its can; the flavor splash
+   carries the change, exactly like the flavor stage. Without motion the steps simply stack. */
+.numbers{position:relative;background:var(--black)}
+.num-stage{position:relative}
+.num-step{position:relative;min-height:100svh;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.6fr);grid-template-rows:1fr auto 1fr;align-items:end;padding:0 var(--gutter);background:var(--bg);color:var(--ink);overflow:hidden}
+.num-figure{grid-column:1;grid-row:2;position:relative;z-index:2;font:900 clamp(110px,17vw,330px)/.78 var(--display);letter-spacing:-.025em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.num-figure b{display:block;font-weight:inherit}
+.num-line{grid-column:1;grid-row:3;align-self:start;position:relative;z-index:2;margin-top:clamp(30px,5.5vh,64px);font:800 clamp(26px,2.9vw,52px)/1 var(--display);text-transform:uppercase;letter-spacing:.005em}
+.num-can{grid-column:2;grid-row:1/4;align-self:center;justify-self:center;position:relative;z-index:1;height:min(78svh,820px);aspect-ratio:1086/1448}
+.num-can img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(26px 30px 22px #0004)}
+.num-splashes{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;display:none}
+.num-splashes .splash-svg{left:72%;top:50%;transform:none}
+.numbers.is-pinned .num-stage{height:100svh;overflow:hidden;background:var(--black)}
+.numbers.is-pinned .num-splashes{display:block}
+.numbers.is-pinned .num-step{position:absolute;inset:0;background:transparent;visibility:hidden}
 
 /* Finale. */
 .finale{padding:15vh var(--gutter) 70px;background:var(--yellow);position:relative;overflow:hidden;min-height:100svh;display:flex;flex-direction:column;align-items:flex-start}
@@ -212,11 +218,10 @@ html.is-loading{overflow:hidden}
   .flavor-arrows{grid-area:arrows}
   .current-flavor{font-size:11px;margin-left:8px}
   .arrow-button{width:46px;height:46px}
-  .numbers{padding:11vh var(--gutter)}
-  .numbers-grid{gap:36px;margin-top:28px}
-  .numbers-grid div,.numbers-grid div:nth-child(even){flex-direction:column;align-items:flex-start;text-align:left;gap:10px}
-  .numbers-grid b{font-size:24vw}
-  .numbers-grid span{padding-bottom:0}
+  .num-step{grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto auto 1.2fr;padding-top:9vh}
+  .num-figure{font-size:30vw}
+  .num-line{font-size:clamp(22px,6.4vw,30px)}
+  .num-can{grid-column:1;grid-row:4;align-self:start;height:34svh;margin-top:4vh}
   .finale{padding-top:11vh;padding-bottom:48px}
   .finale h2{font-size:27vw;line-height:.8}
   .finale h2 .line:last-child{padding-left:.4em}
