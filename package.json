@@ -1,0 +1,23 @@
+{
+  "name": "baly-unleash-the-flavor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "playwright test",
+    "check:assets": "node scripts/check-assets.mjs"
+  },
+  "dependencies": {
+    "@fontsource/barlow-condensed": "5.3.0",
+    "@fontsource/manrope": "5.3.0",
+    "gsap": "3.15.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  }
+}
