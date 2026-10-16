@@ -20,7 +20,9 @@ scenes.innerHTML = flavors.map((flavor, index) => `
   <article class="flavor-scene" data-scene="${flavor.id}" role="group" aria-roledescription="slide" aria-label="${index + 1} de 7: ${flavor.name}" ${index ? 'hidden inert' : ''} style="--ink:${flavor.ink};--accent:${flavor.accent};--tilt:${flavor.tilt}deg">
     <div class="flavor-word ${flavor.display.length > 10 ? 'long-word' : ''}" aria-hidden="true">${flavor.display}</div>
     <div class="scene-art" aria-hidden="true">${artMarkup()}</div>
-    <div class="scene-copy"><h2>${flavor.headline}</h2><p>${flavor.copy}</p></div>
+    <div class="scene-copy"><h2>${flavor.headline}</h2><p class="scene-desc">${flavor.description}</p>
+      <ul class="scene-chips" aria-label="Tamanhos e opções">${flavor.sizes.map(size => `<li>${size}</li>`).join('')}${flavor.zero ? '<li class="chip-zero">Zero açúcar</li>' : ''}</ul>
+      <p class="scene-facts">Cafeína ${flavor.caffeine} · Taurina ${flavor.taurine} <span>(${flavor.per})</span><br />Produto não alcoólico</p></div>
     <div class="scene-product product-slot" data-product="${flavor.id}"><img ${index ? 'data-src' : 'src'}="${productPath(flavor.id)}" alt="Lata BALY ${flavor.name}" width="1086" height="1448" loading="lazy" decoding="async" /></div>
   </article>
 `).join('');
