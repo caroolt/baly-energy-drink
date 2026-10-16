@@ -1,11 +1,11 @@
 import gsap from 'gsap';
 
-type Options = { colors: string[]; ready: Promise<unknown> };
+type Options = { color: string; ready: Promise<unknown> };
 
-// The empty BALY wordmark fills from the bottom with a bubbling liquid that shifts through the
-// flavor colours as the page loads. At 100% the liquid overflows: it rises across the whole screen
+// The empty BALY wordmark fills from the bottom with a bubbling liquid in the brand black as the
+// page loads, ending as the real logo. At 100% the liquid overflows: it rises across the whole screen
 // with the same wave, then lifts away like a curtain. Resolves when the reveal begins.
-export function runPreloader({ colors, ready }: Options): Promise<void> {
+export function runPreloader({ color, ready }: Options): Promise<void> {
   const root = document.querySelector<HTMLElement>('#preloader');
   if (!root) return Promise.resolve();
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { root.remove(); return Promise.resolve(); }
@@ -14,7 +14,7 @@ export function runPreloader({ colors, ready }: Options): Promise<void> {
   const count = root.querySelector<HTMLElement>('.pl-count b')!;
   const bubbles = root.querySelector<HTMLElement>('.pl-bubbles')!;
   const flood = root.querySelector<HTMLElement>('.pl-flood')!;
-  const mix = gsap.utils.interpolate(colors);
+  root.style.setProperty('--liq', color);
   gsap.set(liquid, { yPercent: 100 });
   document.documentElement.classList.add('is-loading');
 
@@ -42,7 +42,6 @@ export function runPreloader({ colors, ready }: Options): Promise<void> {
         ease: 'power1.inOut',
         onUpdate: () => {
           count.textContent = String(Math.round(state.level * 100));
-          root.style.setProperty('--liq', mix(state.level));
           gsap.set(liquid, { yPercent: 100 - state.level * 100 });
         },
       }, 0.2);

@@ -21,10 +21,10 @@ h1,h2,h3,p{margin:0}
 .skip-link{position:fixed;left:16px;top:16px;z-index:100;padding:16px;background:#141414;color:#fbbe00;transform:translateY(-150%)}
 .skip-link:focus{transform:none}
 
-/* Preloader: the BALY wordmark fills with a colour-shifting, bubbling liquid that overflows and floods the screen. */
+/* Preloader: the BALY wordmark fills with a bubbling black liquid that overflows and floods the screen. */
 html.is-loading{overflow:hidden}
-#preloader>*{visibility:visible}
-#preloader{position:fixed;inset:0;z-index:200;background:var(--yellow);color:var(--black);display:grid;place-items:center;overflow:hidden;--liq:#f44958}
+#preloader>:not(.pl-flood){visibility:visible}
+#preloader{position:fixed;inset:0;z-index:200;background:var(--yellow);color:var(--black);display:grid;place-items:center;overflow:hidden;--liq:#141414}
 .pl-top{position:absolute;top:34px;left:var(--gutter);right:var(--gutter);display:flex;justify-content:space-between;gap:24px;font-size:12px;font-weight:700;letter-spacing:.16em}
 .pl-logo{position:relative;width:min(74vw,760px);aspect-ratio:1352/620}
 .pl-outline,.pl-fill{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
@@ -129,6 +129,35 @@ html.is-loading{overflow:hidden}
 .arrow-button:hover:not(:disabled){background:color-mix(in srgb,currentColor 14%,transparent);transform:scale(1.07)}
 .arrow-button:disabled{opacity:.3;cursor:default}
 
+/* Story: brand statement, then a pinned horizontal timeline driven by vertical scroll. */
+.story{position:relative;background:var(--black);color:var(--cream);overflow:hidden}
+.story-intro{padding:18vh var(--gutter) 12vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px 6vw;align-items:end}
+.story-kicker{grid-column:1/-1;font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--yellow)}
+.story h2{grid-column:1/-1;font:900 clamp(40px,7vw,128px)/.9 var(--display);letter-spacing:-.015em;color:var(--yellow);white-space:nowrap}
+.story-lead{grid-column:2}
+.story-lead p{font-size:clamp(16px,1.25vw,20px);line-height:1.6;opacity:.85;max-width:44ch}
+.story-lead p+p{margin-top:18px}
+.story-lead strong{color:var(--yellow);font-weight:700;opacity:1}
+.story-flow{position:relative;padding:6vh var(--gutter) 24vh}
+.story-path{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
+.story-path-line{fill:none;stroke:var(--yellow);stroke-width:26;stroke-linecap:round;stroke-linejoin:round}
+/* The ribbon's end swells into a yellow flood that covers the screen and hands over to the yellow finale. */
+.story-flood{position:absolute;left:50%;top:100%;width:300vmax;height:300vmax;margin:-150vmax 0 0 -150vmax;border-radius:50%;background:var(--yellow);transform:scale(0);z-index:2;pointer-events:none}
+.story-list{list-style:none;margin:0;padding:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:clamp(170px,24vh,300px)}
+.milestone{width:min(38%,500px)}
+.milestone:nth-child(odd){align-self:flex-start;margin-left:3%}
+.milestone:nth-child(even){align-self:flex-end;margin-right:5%}
+.milestone:nth-child(4n+3){margin-left:14%}
+.milestone:nth-child(4n){margin-right:16%}
+.m-year{display:block;font:900 clamp(84px,9vw,168px)/.85 var(--display);letter-spacing:-.02em;color:var(--yellow)}
+.milestone.is-feature{width:min(46%,620px)}
+.milestone.is-feature .m-year{font-size:clamp(120px,15vw,280px);color:var(--cream)}
+.milestone h3{font:800 clamp(24px,2.1vw,36px)/1 var(--display);text-transform:uppercase;letter-spacing:.005em;margin-top:20px}
+.milestone p{font-size:15px;line-height:1.65;opacity:.8;margin-top:14px;max-width:46ch}
+.m-stats{display:flex;gap:32px;margin-top:24px}
+.m-stats b{display:block;font:900 clamp(44px,4.4vw,72px)/1 var(--display);color:var(--yellow)}
+.m-stats span{display:block;margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+
 /* Finale. */
 .finale{padding:15vh var(--gutter) 70px;background:var(--yellow);position:relative;overflow:hidden;min-height:100svh;display:flex;flex-direction:column;align-items:flex-start}
 .finale h2{font:900 clamp(80px,10.5vw,200px)/.82 var(--display);white-space:nowrap;width:max-content;letter-spacing:-.025em;position:relative;z-index:1}
@@ -202,6 +231,16 @@ html.is-loading{overflow:hidden}
   .flavor-arrows{grid-area:arrows}
   .current-flavor{font-size:11px;margin-left:8px}
   .arrow-button{width:46px;height:46px}
+  .story-intro{grid-template-columns:minmax(0,1fr);padding:12vh var(--gutter) 8vh}
+  .story h2{font-size:12.4vw;white-space:normal}
+  .story-lead{grid-column:1}
+  .story-flow{padding:4vh var(--gutter) 16vh}
+  .story-list{gap:96px}
+  .milestone,.milestone.is-feature,.milestone:nth-child(n){width:auto;align-self:stretch;margin:0;padding:0 0 0 44px}
+  .m-year{font-size:22vw}
+  .milestone.is-feature .m-year{font-size:28vw}
+  .milestone p{font-size:14px}
+  .m-stats{gap:22px}
   .finale{padding-top:11vh;padding-bottom:48px}
   .finale h2{font-size:27vw;line-height:.8}
   .finale h2 .line:last-child{padding-left:.4em}

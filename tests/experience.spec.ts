@@ -101,6 +101,22 @@ test('preloader counts up, then lifts and unlocks scrolling', async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.classList.contains('is-loading'))).toBeFalsy();
 });
 
+test('story ribbon draws itself down the page past every milestone', async ({ page }) => {
+  await page.goto('/');
+  await ready(page);
+  await expect(page.locator('.milestone')).toHaveCount(13);
+  await expect(page.locator('.milestone').first()).toContainText('1997');
+  await expect(page.locator('.milestone').last()).toContainText('2025');
+  const drawn = () => page.locator('.story-path-line').evaluate(el => {
+    const path = el as SVGPathElement;
+    return 1 - parseFloat(path.style.strokeDashoffset || '0') / path.getTotalLength();
+  });
+  expect(await drawn()).toBeLessThan(0.05);
+  const flow = await page.locator('.story-flow').evaluate(el => ({ top: el.getBoundingClientRect().top + scrollY, height: el.offsetHeight }));
+  await page.evaluate(({ top, height }) => window.scrollTo(0, top + height / 2), flow);
+  await expect.poll(drawn).toBeGreaterThan(0.3);
+});
+
 test('reduced motion changes flavors without splash animation or scroll smoothing', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#sabores');

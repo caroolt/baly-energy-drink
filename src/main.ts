@@ -6,6 +6,8 @@ import { flavors, productPath } from './flavors';
 import { artMarkup } from './art';
 import { createFlavorSlider } from './slider';
 import { runPreloader } from './preloader';
+import { milestones } from './history';
+import { createStoryPath } from './story';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
@@ -51,6 +53,16 @@ splitWords(manifesto);
 const canLanes = ['72%', '4%', '84%', '16%', '64%', '0%', '78%'];
 document.querySelector('.m-cans')!.innerHTML = flavors.map((flavor, index) => `<div class="m-can product-slot" style="left:${canLanes[index]}"><img data-src="${productPath(flavor.id)}" alt="" width="1086" height="1448" loading="lazy" decoding="async" /></div>`).join('');
 
+document.querySelector('#story-track')!.innerHTML = milestones.map(milestone => `
+  <li class="milestone${milestone.feature ? ' is-feature' : ''}">
+    <span class="m-year">${milestone.year}</span>
+    <h3>${milestone.title}</h3>
+    <p>${milestone.text}</p>
+    ${milestone.stats ? `<div class="m-stats">${milestone.stats.map(stat => `<div><b>${stat.value}</b><span>${stat.label}</span></div>`).join('')}</div>` : ''}
+  </li>`).join('');
+
+const storyPath = createStoryPath(document.querySelector<HTMLElement>('.story-flow')!);
+
 document.querySelector('#flavor-index')!.innerHTML = flavors.map((flavor, index) => `<button type="button" data-flavor="${flavor.id}" aria-label="Explorar ${flavor.name}" aria-current="${index === 0}"></button>`).join('');
 
 const rotations = [-15, -10, -5, 0, 5, 10, 15];
@@ -83,8 +95,7 @@ assetsObserver.observe(document.querySelector('.lineup')!);
 assetsObserver.observe(document.querySelector('.manifesto')!);
 
 const revealed = runPreloader({
-  // Melancia → Maçã Verde → Coco e Açaí → Tadaly → Morango e Pêssego → Tradicional.
-  colors: ['#f44958', '#2b9537', '#9571ae', '#1648e9', '#f3294d', '#141414'],
+  color: '#141414',
   ready: Promise.all([document.fonts.ready, document.querySelector<HTMLImageElement>('.hero-product img')!.decode()]),
 });
 
@@ -205,7 +216,27 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   window.addEventListener('wheel', endJump, { passive: true, signal: events.signal });
   window.addEventListener('touchstart', endJump, { passive: true, signal: events.signal });
 
-  // 4. Finale: title lines and cans rise in, then cans drift at different speeds.
+  // 4. Story: statement lines rise in; the ribbon draws itself down the page, its head dancing
+  //    through the loops, and each milestone rises in as the ribbon reaches it.
+  gsap.from('.story h2 .line > span', { yPercent: 110, duration: 1, stagger: 0.1, ease: 'power4.out', scrollTrigger: { trigger: '.story-intro', start: 'top 70%' } });
+  gsap.from('.story-lead p', { y: 30, opacity: 0, duration: 0.8, stagger: 0.12, ease: 'power3.out', scrollTrigger: { trigger: '.story-lead', start: 'top 85%' } });
+  const ribbon = { progress: 0 };
+  storyPath.draw(0);
+  gsap.to(ribbon, {
+    progress: 1,
+    ease: 'none',
+    onUpdate: () => storyPath.draw(ribbon.progress),
+    scrollTrigger: { trigger: '.story-flow', start: 'top 60%', end: 'bottom 75%', scrub: 0.8, onRefresh: () => storyPath.layout() },
+  });
+  gsap.to('.story-flood', { scale: 1, ease: 'power2.in', scrollTrigger: { trigger: '.finale', start: 'top bottom', end: 'top 15%', scrub: 0.6 } });
+  gsap.utils.toArray<HTMLElement>('.milestone').forEach((milestone, i) => {
+    gsap.from(milestone.children, {
+      x: i % 2 ? 60 : -60, opacity: 0, duration: 0.9, stagger: 0.08, ease: 'power3.out',
+      scrollTrigger: { trigger: milestone, start: 'top 78%', toggleActions: 'play none none reverse' },
+    });
+  });
+
+  // 5. Finale: title lines and cans rise in, then cans drift at different speeds.
   gsap.from('.finale h2 .line > span', { yPercent: 110, duration: 1, stagger: 0.1, ease: 'power4.out', scrollTrigger: { trigger: '.finale', start: 'top 60%' } });
   gsap.from('.lineup-item', { y: 160, rotation: (i: number) => (i % 2 ? 14 : -14), opacity: 0, duration: 1, stagger: 0.07, ease: 'power3.out', scrollTrigger: { trigger: '.lineup', start: 'top 85%' } });
   gsap.utils.toArray<HTMLElement>('.lineup-item img').forEach((img, i) => {
@@ -234,6 +265,7 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
     pointerEvents.abort();
     endJump();
     slider.setDriver(null);
+    storyPath.draw(1);
     pin = undefined;
     smoother?.kill();
     smoother = undefined;
@@ -241,8 +273,10 @@ media.add({ desktop: '(min-width: 1001px) and (pointer: fine)', motion: '(prefer
   };
 });
 
-document.fonts.ready.then(() => ScrollTrigger.refresh());
+document.fonts.ready.then(() => { storyPath.layout(); ScrollTrigger.refresh(); });
+window.addEventListener('resize', () => storyPath.layout(), { signal: events.signal });
 window.addEventListener('load', () => {
+  storyPath.layout();
   ScrollTrigger.refresh();
   if (location.hash) navigateTo(location.hash.slice(1));
 }, { once: true, signal: events.signal });
