@@ -90,9 +90,9 @@ h1,h2,h3,p{margin:0}
 
 /* Finale. */
 .finale{padding:15vh var(--gutter) 70px;background:var(--yellow);position:relative;overflow:hidden;min-height:100svh;display:flex;flex-direction:column;align-items:flex-start}
-.finale h2{font:900 clamp(96px,16vw,270px)/.8 var(--display);letter-spacing:-.025em;position:relative;z-index:1}
-.finale h2 .line:last-child{padding-left:22%}
-.lineup{display:flex;align-items:flex-end;justify-content:center;position:relative;z-index:2;margin-top:-6vw;width:100%;height:clamp(280px,32vw,520px);padding:0 2%}
+.finale h2{font:900 clamp(80px,10.5vw,200px)/.82 var(--display);white-space:nowrap;width:max-content;letter-spacing:-.025em;position:relative;z-index:1}
+.finale h2 .line:last-child{padding-left:.7em}
+.lineup{display:flex;align-items:flex-end;justify-content:center;position:relative;z-index:2;margin-top:2vw;width:100%;height:clamp(280px,32vw,520px);padding:0 2%}
 .lineup-item{position:relative;width:16.2%;height:100%;flex-shrink:0;margin:0 -1.2%;transform:translateY(var(--offset)) rotate(var(--rotation))}
 .lineup-item img{position:absolute;left:50%;top:0;width:175%;max-width:none;height:100%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(8px 12px 7px #1414142e);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
 .lineup-item:hover img,.lineup-item:focus-visible img{transform:translateX(-50%) translateY(-25px) rotate(calc(-1 * var(--rotation)))}
@@ -123,7 +123,7 @@ h1,h2,h3,p{margin:0}
   .scene-product{left:38%;width:52%;top:9%;height:73%}
   .scene-disc{width:62vw;left:64%}
   .flavor-ui{grid-template-columns:1fr minmax(0,300px) 1fr}
-  .finale h2{font-size:21vw}
+  .finale h2{font-size:17vw}
 }
 @media(max-width:700px){
   :root{--gutter:22px}
@@ -157,8 +157,8 @@ h1,h2,h3,p{margin:0}
   .current-flavor{font-size:11px;margin-left:8px}
   .arrow-button{width:46px;height:46px}
   .finale{padding-top:11vh;padding-bottom:48px}
-  .finale h2{font-size:31vw;line-height:.78}
-  .finale h2 .line:last-child{padding-left:12%}
+  .finale h2{font-size:27vw;line-height:.8}
+  .finale h2 .line:last-child{padding-left:.4em}
   .lineup{margin-top:24px;display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(2,200px);height:auto;gap:8px 0;padding:0 3px}
   .lineup-item{width:125%;height:100%;margin-left:-12%;grid-column:span 3;transform:rotate(var(--rotation));--offset:0px!important}
   .lineup-item:nth-child(5){grid-column:2 / span 3}
